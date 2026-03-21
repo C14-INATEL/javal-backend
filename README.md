@@ -67,18 +67,19 @@ cd javal-backend
 docker-compose up -d
 ```
 
-> Isso iniciará uma instância do PostgreSQL na porta `5432`.
+> Isso iniciará uma instância do PostgreSQL na porta `5433`.
 
-### 3. Configure as variáveis de ambiente
+### 3. Configure o banco no Spring Boot
 
-Crie um arquivo `.env` na raiz do projeto ou edite o `application.yml` em `src/main/resources/`:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/javal_db
-    username: seu_usuario
-    password: sua_senha
+Edite o arquivo:
+```bash
+src/main/resources/application.properties
+```
+Adicione:
+```bash
+spring.datasource.url=jdbc:postgresql://localhost:5433/javal_db
+spring.datasource.username=javal_user
+spring.datasource.password=javal_pass
 ```
 
 ### 4. Compile e execute a aplicação
