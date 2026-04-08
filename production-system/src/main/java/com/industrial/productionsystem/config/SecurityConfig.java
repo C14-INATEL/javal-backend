@@ -1,4 +1,4 @@
-package com.industrial.production_system.config;
+package com.industrial.productionsystem.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

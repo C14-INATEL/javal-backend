@@ -1,6 +1,6 @@
-package com.industrial.production_system.repository;
+package com.industrial.productionsystem.repository;
 
-import com.industrial.production_system.entity.Company;
+import com.industrial.productionsystem.entity.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {

@@ -1,5 +1,6 @@
 package com.industrial.productionsystem.service;
 
+import com.industrial.productionsystem.entity.enums.StatusMaquina;
 import com.industrial.productionsystem.entity.Maquina;
 import com.industrial.productionsystem.repository.MaquinaRepository;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,12 @@ public class MaquinaService {
         return repository.findAll();
     }
 
-    public Maquina alterarStatus(Long id, String status) {
+    public Maquina alterarStatus(Long id, StatusMaquina status) {
         Maquina maquina = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
 
         maquina.setStatus(status);
+
         return repository.save(maquina);
     }
 }

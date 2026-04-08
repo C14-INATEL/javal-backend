@@ -1,4 +1,4 @@
-package com.industrial.production_system;
+package com.industrial.productionsystem;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

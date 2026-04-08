@@ -1,11 +1,15 @@
-package com.industrial.production_system;
+package com.industrial.productionsystem;
 
-import com.industrial.production_system.entity.*;
-import com.industrial.production_system.repository.ProdutoRepository;
-import com.industrial.production_system.repository.OrdemDeProducaoRepository;
+import com.industrial.productionsystem.entity.Maquina;
+import com.industrial.productionsystem.entity.OrdemDeProducao;
+import com.industrial.productionsystem.entity.Produto;
+import com.industrial.productionsystem.entity.enums.StatusOrdem;
+import com.industrial.productionsystem.repository.ProdutoRepository;
+import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import com.industrial.productionsystem.repository.MaquinaRepository;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +24,9 @@ class OrdemDeProducaoTest {
     @Autowired
     private ProdutoRepository produtoRepo;
 
+    @Autowired
+    private MaquinaRepository maquinaRepo;
+
     @Test
     void deveSalvarOrdem() {
         Produto produto = new Produto();
@@ -27,11 +34,16 @@ class OrdemDeProducaoTest {
         produto.setTempoProducaoUnitario(5);
         produto = produtoRepo.save(produto);
 
+
+        Maquina maquina = new Maquina();
+        maquina.setNome("Máquina 1");
+        maquina = maquinaRepo.save(maquina);
+
         OrdemDeProducao ordem = new OrdemDeProducao();
         ordem.setProduto(produto);
         ordem.setQuantidade(100);
         ordem.setStatus(StatusOrdem.PENDENTE);
-        ordem.setMaquinaResponsavel("Máquina 1");
+        ordem.setMaquina(maquina);
         ordem.setDataInicio(LocalDateTime.now());
 
         OrdemDeProducao salva = ordemRepo.save(ordem);

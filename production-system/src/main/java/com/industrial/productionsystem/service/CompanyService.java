@@ -1,9 +1,9 @@
-package com.industrial.production_system.service;
+package com.industrial.productionsystem.service;
 
-import com.industrial.production_system.dto.CompanyRegisterRequest;
-import com.industrial.production_system.dto.CompanyRegisterResponse;
-import com.industrial.production_system.entity.Company;
-import com.industrial.production_system.repository.CompanyRepository;
+import com.industrial.productionsystem.dto.CompanyRegisterRequest;
+import com.industrial.productionsystem.dto.CompanyRegisterResponse;
+import com.industrial.productionsystem.entity.Company;
+import com.industrial.productionsystem.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

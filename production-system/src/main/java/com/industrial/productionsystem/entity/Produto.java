@@ -1,8 +1,11 @@
-package com.industrial.production_system.entity;
-
+package com.industrial.productionsystem.entity;
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.*;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "produtos")
 public class Produto {
 
