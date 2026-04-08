@@ -1,13 +1,8 @@
-package com.industrial.productionsystem.entity;
-import com.industrial.productionsystem.entity.enums.StatusMaquina;
+package com.example.javalbackend.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
 @Table(name = "maquinas")
 public class Maquina {
 

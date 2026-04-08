@@ -1,8 +1,8 @@
-package com.industrial.productionsystem.controller;
+package com.industrial.production_system.controller;
 
-import com.industrial.productionsystem.dto.CompanyRegisterRequest;
-import com.industrial.productionsystem.dto.CompanyRegisterResponse;
-import com.industrial.productionsystem.service.CompanyService;
+import com.industrial.production_system.dto.CompanyRegisterRequest;
+import com.industrial.production_system.dto.CompanyRegisterResponse;
+import com.industrial.production_system.service.CompanyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

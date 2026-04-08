@@ -1,13 +1,9 @@
-package com.industrial.productionsystem.dto;
+package com.industrial.production_system.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
-@Getter
-@Setter
 public class CompanyRegisterRequest {
 
     @NotBlank(message = "Nome da empresa é obrigatório")

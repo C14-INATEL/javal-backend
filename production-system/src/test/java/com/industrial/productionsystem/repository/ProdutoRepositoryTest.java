@@ -1,7 +1,7 @@
-package com.industrial.productionsystem;
+package com.industrial.production_system;
 
-import com.industrial.productionsystem.entity.Produto;
-import com.industrial.productionsystem.repository.ProdutoRepository;
+import com.industrial.production_system.entity.Produto;
+import com.industrial.production_system.repository.ProdutoRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

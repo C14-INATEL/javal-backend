@@ -1,4 +1,4 @@
-package com.industrial.productionsystem.entity;
+package com.industrial.production_system.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,10 +6,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "companies")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 public class Company {
 
