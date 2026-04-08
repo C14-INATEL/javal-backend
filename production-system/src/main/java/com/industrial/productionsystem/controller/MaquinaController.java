@@ -1,5 +1,5 @@
 package com.industrial.productionsystem.controller;
-
+import com.industrial.productionsystem.entity.enums.StatusMaquina;
 import com.industrial.productionsystem.entity.Maquina;
 import com.industrial.productionsystem.service.MaquinaService;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +28,7 @@ public class MaquinaController {
 
     @PatchMapping("/{id}/status")
     public Maquina alterarStatus(@PathVariable Long id,
-                                 @RequestParam String status) {
+                                 @RequestParam StatusMaquina status) {
         return service.alterarStatus(id, status);
     }
 }

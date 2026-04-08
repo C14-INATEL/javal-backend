@@ -1,4 +1,4 @@
-package com.industrial.production_system.entity;
+package com.industrial.productionsystem.entity.enums;
 
 public enum StatusOrdem {
     PENDENTE,

@@ -1,9 +1,11 @@
-package com.industrial.production_system;
+package com.industrial.productionsystem;
 
-import com.industrial.production_system.entity.*;
-import com.industrial.production_system.repository.OrdemDeProducaoRepository;
-import com.industrial.production_system.repository.MaquinaRepository;
-import com.industrial.production_system.service.OrdemDeProducaoService;
+import com.industrial.productionsystem.entity.Maquina;
+import com.industrial.productionsystem.entity.OrdemDeProducao;
+import com.industrial.productionsystem.entity.enums.StatusMaquina;
+import com.industrial.productionsystem.entity.enums.StatusOrdem;
+import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
+import com.industrial.productionsystem.service.OrdemDeProducaoService;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,15 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrdemDeProducaoServiceTest {
 
     private final OrdemDeProducaoRepository ordemRepo = Mockito.mock(OrdemDeProducaoRepository.class);
-    private final MaquinaRepository maquinaRepo = Mockito.mock(MaquinaRepository.class);
 
     private final OrdemDeProducaoService service =
-            new OrdemDeProducaoService(ordemRepo, maquinaRepo);
+            new OrdemDeProducaoService(ordemRepo);
 
     @Test
     void naoDeveIniciarOrdemComMaquinaEmManutencao() {
         Maquina maquina = new Maquina();
-        maquina.setStatus("MANUTENCAO");
+        maquina.setStatus(StatusMaquina.MANUTENCAO);
 
         OrdemDeProducao ordem = new OrdemDeProducao();
         ordem.setMaquina(maquina);
@@ -36,7 +37,7 @@ class OrdemDeProducaoServiceTest {
     @Test
     void deveIniciarOrdemComMaquinaAtiva() {
         Maquina maquina = new Maquina();
-        maquina.setStatus("ATIVA");
+        maquina.setStatus(StatusMaquina.ATIVA);
 
         OrdemDeProducao ordem = new OrdemDeProducao();
         ordem.setMaquina(maquina);
