@@ -21,6 +21,9 @@ public class Company {
     private String name;
 
     @Column(nullable = false, unique = true)
+    private String cnpj;
+
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -35,6 +38,7 @@ public class Company {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @SuppressWarnings("unused")
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

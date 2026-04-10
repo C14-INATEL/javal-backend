@@ -5,7 +5,6 @@ import com.industrial.productionsystem.dto.CompanyRegisterResponse;
 import com.industrial.productionsystem.entity.Company;
 import com.industrial.productionsystem.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,19 +12,24 @@ import org.springframework.stereotype.Service;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public CompanyRegisterResponse register(CompanyRegisterRequest request) {
+
         if (companyRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado");
+            throw new RuntimeException("Email já cadastrado");
+        }
+
+        if (companyRepository.existsByCnpj(request.getCnpj())) {
+            throw new RuntimeException("CNPJ já cadastrado");
         }
 
         Company company = Company.builder()
                 .name(request.getName())
+                .cnpj(request.getCnpj())
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .responsibleName(request.getResponsibleName())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(request.getPassword())
                 .build();
 
         Company saved = companyRepository.save(company);
@@ -33,6 +37,7 @@ public class CompanyService {
         return CompanyRegisterResponse.builder()
                 .id(saved.getId())
                 .name(saved.getName())
+                .cnpj(saved.getCnpj())
                 .email(saved.getEmail())
                 .phone(saved.getPhone())
                 .responsibleName(saved.getResponsibleName())
