@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.industrial.productionsystem.repository.MaquinaRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
