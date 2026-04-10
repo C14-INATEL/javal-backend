@@ -51,4 +51,30 @@ class OrdemDeProducaoTest {
         assertNotNull(salva.getId());
         assertEquals(StatusOrdem.PENDENTE, salva.getStatus());
     }
+    @Test
+    void deveBuscarOrdensPorMaquina() {
+        Produto produto = new Produto();
+        produto.setNome("Produto X");
+        produto.setTempoProducaoUnitario(5);
+        produto = produtoRepo.save(produto);
+
+        Maquina maquina = new Maquina();
+        maquina.setNome("Máquina X");
+        maquina = maquinaRepo.save(maquina);
+
+        OrdemDeProducao ordem = new OrdemDeProducao();
+        ordem.setProduto(produto);
+        ordem.setQuantidade(50);
+        ordem.setStatus(StatusOrdem.PENDENTE);
+        ordem.setMaquina(maquina);
+
+        ordemRepo.save(ordem);
+
+        List<OrdemDeProducao> resultado =
+                ordemRepo.findByMaquinaId(maquina.getId());
+
+        assertFalse(resultado.isEmpty());
+        assertEquals(maquina.getId(),
+                resultado.get(0).getMaquina().getId());
+    }
 }
