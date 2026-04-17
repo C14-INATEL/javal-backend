@@ -61,4 +61,26 @@ class OrdemDeProducaoServiceTest {
 
         assertEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
     }
+    @Test
+    void deveLancarErroAoIniciarOrdemInexistente() {
+        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> service.iniciar(1L));
+    }
+
+    @Test
+    void deveDefinirDataInicioAoIniciarOrdem() {
+        Maquina maquina = new Maquina();
+        maquina.setStatus(StatusMaquina.ATIVA);
+
+        OrdemDeProducao ordem = new OrdemDeProducao();
+        ordem.setMaquina(maquina);
+
+        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
+        Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
+
+        OrdemDeProducao resultado = service.iniciar(1L);
+
+        assertNotNull(resultado.getDataInicio());
+    }
 }
