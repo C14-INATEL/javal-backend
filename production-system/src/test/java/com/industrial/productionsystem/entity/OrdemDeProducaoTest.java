@@ -10,20 +10,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OrdemDeProducaoTest {
 
-    // ========== TESTE 4: Criação de ordem de produção e verificação do status inicial ==========
+    // ========== TESTE 4 ==========
     @Test
     @DisplayName("Deve criar ordem de produção com status inicial PENDENTE")
     void deveCriarOrdemDeProducaoComStatusPendente() {
-        // Arrange - criação do produto associado
-        Produto produto = new Produto();
-        produto.setNome("Engrenagem Industrial");
-        produto.setTempoProducaoUnitario(30);
 
-        // Arrange - criação da máquina associada
-        Maquina maquina = new Maquina();
-        maquina.setNome("Torno CNC 01");
+        // Arrange
+        Produto produto = criarProdutoValido();
+        Maquina maquina = criarMaquinaValida();
 
-        // Act - criação da ordem de produção
+        // Act
         OrdemDeProducao ordem = new OrdemDeProducao();
         ordem.setProduto(produto);
         ordem.setQuantidade(500);
@@ -31,17 +27,31 @@ class OrdemDeProducaoTest {
         ordem.setMaquina(maquina);
         ordem.setDataInicio(LocalDateTime.of(2026, 4, 7, 8, 0));
 
-        // Assert - verifica todos os campos
+        // Assert
         assertEquals(produto, ordem.getProduto());
         assertEquals(500, ordem.getQuantidade());
         assertEquals("Torno CNC 01", ordem.getMaquina().getNome());
         assertEquals(LocalDateTime.of(2026, 4, 7, 8, 0), ordem.getDataInicio());
-        assertNull(ordem.getDataFim()); // ainda não finalizou
+        assertNull(ordem.getDataFim());
 
-        // Verificação principal: status inicial é PENDENTE
         assertEquals(StatusOrdem.PENDENTE, ordem.getStatus());
         assertNotEquals(StatusOrdem.EM_PRODUCAO, ordem.getStatus());
         assertNotEquals(StatusOrdem.FINALIZADA, ordem.getStatus());
         assertNotEquals(StatusOrdem.CANCELADA, ordem.getStatus());
+    }
+
+    // =========================
+    // MÉTODOS AUXILIARES
+    // =========================
+
+    private Produto criarProdutoValido() {
+        Produto produto = new Produto();
+        produto.setNome("Engrenagem Industrial");
+        produto.setTempoProducaoUnitario(30);
+        return produto;
+    }
+
+    private Maquina criarMaquinaValida() {
+        return new Maquina("Torno CNC 01", "Torno CNC", 100);
     }
 }

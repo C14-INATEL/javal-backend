@@ -30,15 +30,9 @@ class OrdemDeProducaoTest {
 
     @Test
     void deveSalvarOrdem() {
-        Produto produto = new Produto();
-        produto.setNome("Produto B");
-        produto.setTempoProducaoUnitario(5);
-        produto = produtoRepo.save(produto);
 
-
-        Maquina maquina = new Maquina();
-        maquina.setNome("Máquina 1");
-        maquina = maquinaRepo.save(maquina);
+        Produto produto = produtoRepo.save(criarProdutoValido());
+        Maquina maquina = maquinaRepo.save(criarMaquinaValida());
 
         OrdemDeProducao ordem = new OrdemDeProducao();
         ordem.setProduto(produto);
@@ -52,16 +46,12 @@ class OrdemDeProducaoTest {
         assertNotNull(salva.getId());
         assertEquals(StatusOrdem.PENDENTE, salva.getStatus());
     }
+
     @Test
     void deveBuscarOrdensPorMaquina() {
-        Produto produto = new Produto();
-        produto.setNome("Produto X");
-        produto.setTempoProducaoUnitario(5);
-        produto = produtoRepo.save(produto);
 
-        Maquina maquina = new Maquina();
-        maquina.setNome("Máquina X");
-        maquina = maquinaRepo.save(maquina);
+        Produto produto = produtoRepo.save(criarProdutoValido());
+        Maquina maquina = maquinaRepo.save(criarMaquinaValida());
 
         OrdemDeProducao ordem = new OrdemDeProducao();
         ordem.setProduto(produto);
@@ -77,5 +67,20 @@ class OrdemDeProducaoTest {
         assertFalse(resultado.isEmpty());
         assertEquals(maquina.getId(),
                 resultado.get(0).getMaquina().getId());
+    }
+
+    // =========================
+    // MÉTODOS AUXILIARES
+    // =========================
+
+    private Produto criarProdutoValido() {
+        Produto produto = new Produto();
+        produto.setNome("Produto Teste");
+        produto.setTempoProducaoUnitario(5);
+        return produto;
+    }
+
+    private Maquina criarMaquinaValida() {
+        return new Maquina("Máquina Teste", "CNC", 100);
     }
 }
