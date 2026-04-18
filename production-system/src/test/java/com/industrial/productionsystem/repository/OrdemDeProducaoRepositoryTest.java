@@ -1,4 +1,4 @@
-package com.industrial.productionsystem;
+package com.industrial.productionsystem.repository;
 
 import com.industrial.productionsystem.entity.Maquina;
 import com.industrial.productionsystem.entity.OrdemDeProducao;
@@ -10,14 +10,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import com.industrial.productionsystem.repository.MaquinaRepository;
-
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-class OrdemDeProducaoTest {
+@DataJpaTest
+@ActiveProfiles("test")
+class OrdemDeProducaoRepositoryTest {
 
     @Autowired
     private OrdemDeProducaoRepository ordemRepo;
@@ -68,10 +71,6 @@ class OrdemDeProducaoTest {
         assertEquals(maquina.getId(),
                 resultado.get(0).getMaquina().getId());
     }
-
-    // =========================
-    // MÉTODOS AUXILIARES
-    // =========================
 
     private Produto criarProdutoValido() {
         Produto produto = new Produto();

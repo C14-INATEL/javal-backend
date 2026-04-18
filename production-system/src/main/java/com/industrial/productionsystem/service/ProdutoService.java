@@ -16,6 +16,15 @@ public class ProdutoService {
     }
 
     public Produto criar(Produto produto) {
+
+        if (produto.getNome() == null || produto.getNome().isBlank()) {
+            throw new IllegalArgumentException("Nome do produto é obrigatório");
+        }
+
+        if (produto.getTempoProducaoUnitario() == null || produto.getTempoProducaoUnitario() <= 0) {
+            throw new IllegalArgumentException("Tempo de produção deve ser maior que zero");
+        }
+
         return repository.save(produto);
     }
 

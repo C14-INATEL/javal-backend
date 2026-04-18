@@ -3,7 +3,8 @@ package com.industrial.productionsystem.entity;
 import com.industrial.productionsystem.entity.enums.StatusOrdem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
