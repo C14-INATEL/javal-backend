@@ -42,14 +42,16 @@ class CompanyServiceTest {
         request.setPhone("(35) 99999-0000");
         request.setResponsibleName("João Silva");
         request.setPassword("senha123");
+        request.setCnpj("12345678000199");
     }
 
-    // ========== TESTE 1: Cadastro de empresa com sucesso ==========
     @Test
     @DisplayName("Deve cadastrar empresa com sucesso quando email não existe")
     void deveCadastrarEmpresaComSucesso() {
+
         // Arrange
         when(companyRepository.existsByEmail(request.getEmail())).thenReturn(false);
+        when(companyRepository.existsByCnpj(request.getCnpj())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("senhaCriptografada");
 
         Company companySalva = Company.builder()
@@ -77,14 +79,15 @@ class CompanyServiceTest {
         assertNotNull(response.getCreatedAt());
 
         verify(companyRepository, times(1)).existsByEmail(request.getEmail());
+        verify(companyRepository, times(1)).existsByCnpj(request.getCnpj());
         verify(passwordEncoder, times(1)).encode("senha123");
         verify(companyRepository, times(1)).save(any(Company.class));
     }
 
-    // ========== TESTE 2: Cadastro com email duplicado lança exceção ==========
     @Test
     @DisplayName("Deve lançar exceção ao cadastrar empresa com email já existente")
     void deveLancarExcecaoQuandoEmailJaCadastrado() {
+
         // Arrange
         when(companyRepository.existsByEmail(request.getEmail())).thenReturn(true);
 
