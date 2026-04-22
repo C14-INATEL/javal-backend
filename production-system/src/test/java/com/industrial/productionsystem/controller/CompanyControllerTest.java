@@ -12,8 +12,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-
 import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +40,7 @@ class CompanyControllerTest {
                 .thenReturn(CompanyTest.criarResponseEsperado());
 
         mockMvc.perform(post("/api/companies/register")
-                        .with(csrf()) // envia o token CSRF junto
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(CompanyTest.criarRequestValido())))
                 .andExpect(status().isCreated())

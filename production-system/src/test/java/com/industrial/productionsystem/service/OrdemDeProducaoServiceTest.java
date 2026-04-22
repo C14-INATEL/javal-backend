@@ -1,4 +1,4 @@
-package com.industrial.productionsystem;
+package com.industrial.productionsystem.service;
 
 import com.industrial.productionsystem.entity.Maquina;
 import com.industrial.productionsystem.entity.OrdemDeProducao;
