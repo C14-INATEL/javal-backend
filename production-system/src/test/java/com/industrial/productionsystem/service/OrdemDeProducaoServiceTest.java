@@ -83,4 +83,24 @@ class OrdemDeProducaoServiceTest {
 
         assertNotNull(resultado.getDataInicio());
     }
+
+    @Test
+    void deveForcarStatusPendenteAoCriarOrdemMesmoQuandoOutroStatusEhInformado() {
+        // Arrange - alguém tenta criar uma ordem já como FINALIZADA
+        OrdemDeProducao ordem = new OrdemDeProducao();
+        ordem.setStatus(StatusOrdem.FINALIZADA);
+        ordem.setQuantidade(100);
+
+        Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
+
+        // Act
+        OrdemDeProducao resultado = service.criar(ordem);
+
+        // Assert - o service deve sobrescrever o status para PENDENTE
+        assertEquals(StatusOrdem.PENDENTE, resultado.getStatus());
+        assertNotEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
+
+        // E deve persistir só uma vez
+        Mockito.verify(ordemRepo, Mockito.times(1)).save(ordem);
+    }
 }
