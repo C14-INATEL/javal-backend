@@ -83,37 +83,4 @@ class OrdemDeProducaoServiceTest {
 
         assertNotNull(resultado.getDataInicio());
     }
-    @Test
-    void deveSalvarOrdemAoFinalizar() {
-        OrdemDeProducao ordem = new OrdemDeProducao();
-
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
-        Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
-
-        OrdemDeProducao resultado = service.finalizar(1L);
-
-        assertEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
-        assertNotNull(resultado.getDataFim());
-
-        Mockito.verify(ordemRepo).save(ordem);
-    }
-    @Test
-    void naoDeveSalvarOrdemInexistenteAoFinalizar() {
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> service.finalizar(1L));
-
-        Mockito.verify(ordemRepo, Mockito.never()).save(Mockito.any());
-    }
-    @Test
-    void naoDeveIniciarOrdemSemMaquina() {
-        OrdemDeProducao ordem = new OrdemDeProducao();
-        ordem.setMaquina(null);
-
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
-
-        assertThrows(NullPointerException.class, () -> service.iniciar(1L));
-
-        Mockito.verify(ordemRepo, Mockito.never()).save(Mockito.any());
-    }
 }

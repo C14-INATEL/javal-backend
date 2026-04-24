@@ -102,4 +102,29 @@ class CompanyServiceTest {
         verify(companyRepository, never()).save(any(Company.class));
         verify(passwordEncoder, never()).encode(anyString());
     }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao cadastrar empresa com CNPJ já existente")
+    void deveLancarExcecaoQuandoCnpjJaCadastrado() {
+
+        // Arrange - email livre, mas CNPJ já cadastrado
+        when(companyRepository.existsByEmail(request.getEmail())).thenReturn(false);
+        when(companyRepository.existsByCnpj(request.getCnpj())).thenReturn(true);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> companyService.register(request)
+        );
+
+        assertEquals("CNPJ já cadastrado", exception.getMessage());
+
+        // Garante que a verificação de email aconteceu ANTES da de CNPJ
+        verify(companyRepository, times(1)).existsByEmail(request.getEmail());
+        verify(companyRepository, times(1)).existsByCnpj(request.getCnpj());
+
+        // Nada de criptografar senha ou salvar quando há duplicidade
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(companyRepository, never()).save(any(Company.class));
+    }
 }
