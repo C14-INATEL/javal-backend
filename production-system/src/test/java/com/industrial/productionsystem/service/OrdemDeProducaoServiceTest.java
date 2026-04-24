@@ -83,24 +83,37 @@ class OrdemDeProducaoServiceTest {
 
         assertNotNull(resultado.getDataInicio());
     }
-
     @Test
-    void deveForcarStatusPendenteAoCriarOrdemMesmoQuandoOutroStatusEhInformado() {
-        // Arrange - alguém tenta criar uma ordem já como FINALIZADA
+    void deveSalvarOrdemAoFinalizar() {
         OrdemDeProducao ordem = new OrdemDeProducao();
-        ordem.setStatus(StatusOrdem.FINALIZADA);
-        ordem.setQuantidade(100);
 
+        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
         Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
 
-        // Act
-        OrdemDeProducao resultado = service.criar(ordem);
+        OrdemDeProducao resultado = service.finalizar(1L);
 
-        // Assert - o service deve sobrescrever o status para PENDENTE
-        assertEquals(StatusOrdem.PENDENTE, resultado.getStatus());
-        assertNotEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
+        assertEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
+        assertNotNull(resultado.getDataFim());
 
-        // E deve persistir só uma vez
-        Mockito.verify(ordemRepo, Mockito.times(1)).save(ordem);
+        Mockito.verify(ordemRepo).save(ordem);
+    }
+    @Test
+    void naoDeveSalvarOrdemInexistenteAoFinalizar() {
+        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> service.finalizar(1L));
+
+        Mockito.verify(ordemRepo, Mockito.never()).save(Mockito.any());
+    }
+    @Test
+    void naoDeveIniciarOrdemSemMaquina() {
+        OrdemDeProducao ordem = new OrdemDeProducao();
+        ordem.setMaquina(null);
+
+        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
+
+        assertThrows(NullPointerException.class, () -> service.iniciar(1L));
+
+        Mockito.verify(ordemRepo, Mockito.never()).save(Mockito.any());
     }
 }
