@@ -1,38 +1,54 @@
 package com.industrial.productionsystem.controller;
 
-import com.industrial.productionsystem.entity.OrdemDeProducao;
+import com.industrial.productionsystem.dto.OrdemRequest;
+import com.industrial.productionsystem.dto.OrdemResponse;
+import com.industrial.productionsystem.security.CompanyPrincipal;
 import com.industrial.productionsystem.service.OrdemDeProducaoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/ordens")
+@RequestMapping("/api/ordens")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class OrdemDeProducaoController {
 
     private final OrdemDeProducaoService service;
 
-    public OrdemDeProducaoController(OrdemDeProducaoService service) {
-        this.service = service;
-    }
-
     @PostMapping
-    public OrdemDeProducao criar(@RequestBody OrdemDeProducao ordem) {
-        return service.criar(ordem);
+    public ResponseEntity<OrdemResponse> criar(
+            @Valid @RequestBody OrdemRequest request,
+            @AuthenticationPrincipal CompanyPrincipal principal) {
+
+        OrdemResponse response = service.criar(request, principal.getId());
+        return ResponseEntity.status(201).body(response);
     }
 
     @GetMapping
-    public List<OrdemDeProducao> listar() {
-        return service.listar();
+    public ResponseEntity<List<OrdemResponse>> listar(
+            @AuthenticationPrincipal CompanyPrincipal principal) {
+
+        return ResponseEntity.ok(service.listar(principal.getId()));
     }
 
     @PostMapping("/{id}/iniciar")
-    public OrdemDeProducao iniciar(@PathVariable Long id) {
-        return service.iniciar(id);
+    public ResponseEntity<OrdemResponse> iniciar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CompanyPrincipal principal) {
+
+        return ResponseEntity.ok(service.iniciar(id, principal.getId()));
     }
 
     @PostMapping("/{id}/finalizar")
-    public OrdemDeProducao finalizar(@PathVariable Long id) {
-        return service.finalizar(id);
+    public ResponseEntity<OrdemResponse> finalizar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CompanyPrincipal principal) {
+
+        return ResponseEntity.ok(service.finalizar(id, principal.getId()));
     }
 }

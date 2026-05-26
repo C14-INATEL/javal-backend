@@ -1,56 +1,89 @@
 package com.industrial.productionsystem.service;
 
-import com.industrial.productionsystem.entity.Maquina;
-import com.industrial.productionsystem.entity.OrdemDeProducao;
+import com.industrial.productionsystem.dto.OrdemRequest;
+import com.industrial.productionsystem.dto.OrdemResponse;
+import com.industrial.productionsystem.entity.*;
 import com.industrial.productionsystem.entity.enums.StatusMaquina;
 import com.industrial.productionsystem.entity.enums.StatusOrdem;
-import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
+import com.industrial.productionsystem.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrdemDeProducaoService {
 
     private final OrdemDeProducaoRepository repository;
+    private final ProdutoRepository produtoRepository;
+    private final MaquinaRepository maquinaRepository;
+    private final CompanyRepository companyRepository;
 
-    public OrdemDeProducaoService(OrdemDeProducaoRepository repository) {
-        this.repository = repository;
-    }
+    public OrdemResponse criar(OrdemRequest request, Long companyId) {
 
-    public OrdemDeProducao criar(OrdemDeProducao ordem) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+
+        // Garante que produto pertence à empresa
+        Produto produto = produtoRepository.findByIdAndCompanyId(request.getProdutoId(), companyId)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado nesta empresa"));
+
+        // Garante que máquina pertence à empresa
+        Maquina maquina = maquinaRepository.findByIdAndCompanyId(request.getMaquinaId(), companyId)
+                .orElseThrow(() -> new IllegalArgumentException("Máquina não encontrada nesta empresa"));
+
+        if (maquina.getStatus() == StatusMaquina.INATIVA) {
+            throw new IllegalArgumentException("Máquina está inativa e não pode receber ordens");
+        }
+
+        OrdemDeProducao ordem = new OrdemDeProducao();
+        ordem.setProduto(produto);
+        ordem.setMaquina(maquina);
+        ordem.setQuantidade(request.getQuantidade());
         ordem.setStatus(StatusOrdem.PENDENTE);
-        return repository.save(ordem);
+        ordem.setCompany(company);
+
+        return OrdemResponse.from(repository.save(ordem));
     }
 
-    public List<OrdemDeProducao> listar() {
-        return repository.findAll();
+    public List<OrdemResponse> listar(Long companyId) {
+        return repository.findByCompanyId(companyId)
+                .stream()
+                .map(OrdemResponse::from)
+                .toList();
     }
 
-    public OrdemDeProducao iniciar(Long id) {
-        OrdemDeProducao ordem = repository.findById(id)
+    public OrdemResponse iniciar(Long id, Long companyId) {
+        OrdemDeProducao ordem = repository.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new RuntimeException("Ordem não encontrada"));
 
-        Maquina maquina = ordem.getMaquina();
+        if (ordem.getStatus() != StatusOrdem.PENDENTE) {
+            throw new IllegalArgumentException("Apenas ordens PENDENTES podem ser iniciadas");
+        }
 
-        if (maquina.getStatus() == StatusMaquina.MANUTENCAO) {
-            throw new RuntimeException("Máquina em manutenção");
+        if (ordem.getMaquina().getStatus() == StatusMaquina.MANUTENCAO) {
+            throw new IllegalArgumentException("Máquina em manutenção, não é possível iniciar a ordem");
         }
 
         ordem.setStatus(StatusOrdem.EM_PRODUCAO);
         ordem.setDataInicio(LocalDateTime.now());
 
-        return repository.save(ordem);
+        return OrdemResponse.from(repository.save(ordem));
     }
 
-    public OrdemDeProducao finalizar(Long id) {
-        OrdemDeProducao ordem = repository.findById(id)
+    public OrdemResponse finalizar(Long id, Long companyId) {
+        OrdemDeProducao ordem = repository.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new RuntimeException("Ordem não encontrada"));
+
+        if (ordem.getStatus() != StatusOrdem.EM_PRODUCAO) {
+            throw new IllegalArgumentException("Apenas ordens EM_PRODUCAO podem ser finalizadas");
+        }
 
         ordem.setStatus(StatusOrdem.FINALIZADA);
         ordem.setDataFim(LocalDateTime.now());
 
-        return repository.save(ordem);
+        return OrdemResponse.from(repository.save(ordem));
     }
 }
