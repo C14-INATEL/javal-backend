@@ -1,7 +1,8 @@
 package com.industrial.productionsystem.entity;
+
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.persistence.*;
 
 @Entity
 @Getter
@@ -13,18 +14,13 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
 
+    @Column(nullable = false)
     private Integer tempoProducaoUnitario;
-
-    // getters e setters
-    public Long getId() { return id; }
-
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-
-    public Integer getTempoProducaoUnitario() { return tempoProducaoUnitario; }
-    public void setTempoProducaoUnitario(Integer tempo) {
-        this.tempoProducaoUnitario = tempo;
-    }
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 }

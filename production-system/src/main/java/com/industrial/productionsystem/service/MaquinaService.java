@@ -1,53 +1,71 @@
 package com.industrial.productionsystem.service;
 
-import com.industrial.productionsystem.entity.enums.StatusMaquina;
+import com.industrial.productionsystem.dto.MaquinaRequest;
+import com.industrial.productionsystem.dto.MaquinaResponse;
+import com.industrial.productionsystem.entity.Company;
 import com.industrial.productionsystem.entity.Maquina;
+import com.industrial.productionsystem.entity.enums.StatusMaquina;
+import com.industrial.productionsystem.repository.CompanyRepository;
 import com.industrial.productionsystem.repository.MaquinaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MaquinaService {
 
     private final MaquinaRepository repository;
+    private final CompanyRepository companyRepository;
 
-    public MaquinaService(MaquinaRepository repository) {
-        this.repository = repository;
-    }
+    public MaquinaResponse criar(MaquinaRequest request, Long companyId) {
 
-    public Maquina criar(Maquina maquina) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
 
-        if (maquina.getNome() == null || maquina.getNome().isBlank()) {
-            throw new IllegalArgumentException("Nome da máquina é obrigatório");
+        Maquina maquina = new Maquina(
+                request.getNome(),
+                request.getTipo(),
+                request.getCapacidadePorHora(),
+                company
+        );
+
+        if (request.getStatus() != null) {
+            maquina.setStatus(request.getStatus());
         }
 
-        if (maquina.getTipo() == null || maquina.getTipo().isBlank()) {
-            throw new IllegalArgumentException("Tipo da máquina é obrigatório");
-        }
-
-        if (maquina.getCapacidadePorHora() == null || maquina.getCapacidadePorHora() <= 0) {
-            throw new IllegalArgumentException("Capacidade deve ser maior que zero");
-        }
-
-        return repository.save(maquina);
+        return MaquinaResponse.from(repository.save(maquina));
     }
 
-    public List<Maquina> listar() {
-        return repository.findAll();
+    public List<MaquinaResponse> listar(Long companyId) {
+        return repository.findByCompanyId(companyId)
+                .stream()
+                .map(MaquinaResponse::from)
+                .toList();
     }
 
-    public Maquina alterarStatus(Long id, StatusMaquina status) {
+    public MaquinaResponse alterarStatus(Long id, StatusMaquina status, Long companyId) {
 
         if (status == null) {
             throw new IllegalArgumentException("Status não pode ser nulo");
         }
 
-        Maquina maquina = repository.findById(id)
+        Maquina maquina = repository.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
 
         maquina.setStatus(status);
+        return MaquinaResponse.from(repository.save(maquina));
+    }
 
-        return repository.save(maquina);
+    public void deletar(Long id, Long companyId) {
+        Maquina maquina = repository.findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
+        repository.delete(maquina);
+    }
+
+    public Object criar(MaquinaRequest any) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'criar'");
     }
 }

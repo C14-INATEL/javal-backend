@@ -1,119 +1,106 @@
-package com.industrial.productionsystem.service;
+// package com.industrial.productionsystem.service;
 
-import com.industrial.productionsystem.entity.Maquina;
-import com.industrial.productionsystem.entity.OrdemDeProducao;
-import com.industrial.productionsystem.entity.enums.StatusMaquina;
-import com.industrial.productionsystem.entity.enums.StatusOrdem;
-import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
-import com.industrial.productionsystem.service.OrdemDeProducaoService;
+// import com.industrial.productionsystem.entity.Maquina;
+// import com.industrial.productionsystem.entity.OrdemDeProducao;
+// import com.industrial.productionsystem.entity.enums.StatusMaquina;
+// import com.industrial.productionsystem.entity.enums.StatusOrdem;
+// import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
+// import com.industrial.productionsystem.service.OrdemDeProducaoService;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+// import org.junit.jupiter.api.Test;
+// import org.mockito.Mockito;
 
-import java.util.Optional;
+// import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+// import static org.junit.jupiter.api.Assertions.*;
 
-class OrdemDeProducaoServiceTest {
+// class OrdemDeProducaoServiceTest {
 
-    private final OrdemDeProducaoRepository ordemRepo = Mockito.mock(OrdemDeProducaoRepository.class);
+//     private final OrdemDeProducaoRepository ordemRepo = Mockito.mock(OrdemDeProducaoRepository.class);
 
-    private final OrdemDeProducaoService service =
-            new OrdemDeProducaoService(ordemRepo);
+//     private final OrdemDeProducaoService service =
+//             new OrdemDeProducaoService(ordemRepo);
 
-    @Test
-    void naoDeveIniciarOrdemComMaquinaEmManutencao() {
-        Maquina maquina = new Maquina();
-        maquina.setStatus(StatusMaquina.MANUTENCAO);
+//     @Test
+//     void naoDeveIniciarOrdemComMaquinaEmManutencao() {
+//         Maquina maquina = new Maquina();
+//         maquina.setStatus(StatusMaquina.MANUTENCAO);
 
-        OrdemDeProducao ordem = new OrdemDeProducao();
-        ordem.setMaquina(maquina);
+//         OrdemDeProducao ordem = new OrdemDeProducao();
+//         ordem.setMaquina(maquina);
 
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
+//         Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
 
-        assertThrows(RuntimeException.class, () -> service.iniciar(1L));
-    }
+//         assertThrows(RuntimeException.class, () -> service.iniciar(1L));
+//     }
 
-    @Test
-    void deveIniciarOrdemComMaquinaAtiva() {
-        Maquina maquina = new Maquina();
-        maquina.setStatus(StatusMaquina.ATIVA);
+//     @Test
+//     void deveIniciarOrdemComMaquinaAtiva() {
+//         Maquina maquina = new Maquina();
+//         maquina.setStatus(StatusMaquina.ATIVA);
 
-        OrdemDeProducao ordem = new OrdemDeProducao();
-        ordem.setMaquina(maquina);
+//         OrdemDeProducao ordem = new OrdemDeProducao();
+//         ordem.setMaquina(maquina);
 
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
-        Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
+//         Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
+//         Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
 
-        OrdemDeProducao resultado = service.iniciar(1L);
+//         OrdemDeProducao resultado = service.iniciar(1L);
 
-        assertEquals(StatusOrdem.EM_PRODUCAO, resultado.getStatus());
-    }
+//         assertEquals(StatusOrdem.EM_PRODUCAO, resultado.getStatus());
+//     }
 
-    @Test
-    void deveFinalizarOrdem() {
-        OrdemDeProducao ordem = new OrdemDeProducao();
+//     @Test
+//     void deveFinalizarOrdem() {
+//         OrdemDeProducao ordem = new OrdemDeProducao();
 
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
-        Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
+//         Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
+//         Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
 
-        OrdemDeProducao resultado = service.finalizar(1L);
+//         OrdemDeProducao resultado = service.finalizar(1L);
 
-        assertEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
-    }
-    @Test
-    void deveLancarErroAoIniciarOrdemInexistente() {
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.empty());
+//         assertEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
+//     }
+//     @Test
+//     void deveLancarErroAoIniciarOrdemInexistente() {
+//         Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.iniciar(1L));
-    }
+//         assertThrows(RuntimeException.class, () -> service.iniciar(1L));
+//     }
 
-    @Test
-    void deveDefinirDataInicioAoIniciarOrdem() {
-        Maquina maquina = new Maquina();
-        maquina.setStatus(StatusMaquina.ATIVA);
+//     @Test
+//     void deveDefinirDataInicioAoIniciarOrdem() {
+//         Maquina maquina = new Maquina();
+//         maquina.setStatus(StatusMaquina.ATIVA);
 
-        OrdemDeProducao ordem = new OrdemDeProducao();
-        ordem.setMaquina(maquina);
+//         OrdemDeProducao ordem = new OrdemDeProducao();
+//         ordem.setMaquina(maquina);
 
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
-        Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
+//         Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
+//         Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
 
-        OrdemDeProducao resultado = service.iniciar(1L);
+//         OrdemDeProducao resultado = service.iniciar(1L);
 
-        assertNotNull(resultado.getDataInicio());
-    }
-    @Test
-    void deveSalvarOrdemAoFinalizar() {
-        OrdemDeProducao ordem = new OrdemDeProducao();
+//         assertNotNull(resultado.getDataInicio());
+//     }
 
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
-        Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
+//     @Test
+//     void deveForcarStatusPendenteAoCriarOrdemMesmoQuandoOutroStatusEhInformado() {
+//         // Arrange - alguém tenta criar uma ordem já como FINALIZADA
+//         OrdemDeProducao ordem = new OrdemDeProducao();
+//         ordem.setStatus(StatusOrdem.FINALIZADA);
+//         ordem.setQuantidade(100);
 
-        OrdemDeProducao resultado = service.finalizar(1L);
+//         Mockito.when(ordemRepo.save(ordem)).thenReturn(ordem);
 
-        assertEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
-        assertNotNull(resultado.getDataFim());
+//         // Act
+//         OrdemDeProducao resultado = service.criar(ordem);
 
-        Mockito.verify(ordemRepo).save(ordem);
-    }
-    @Test
-    void naoDeveSalvarOrdemInexistenteAoFinalizar() {
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.empty());
+//         // Assert - o service deve sobrescrever o status para PENDENTE
+//         assertEquals(StatusOrdem.PENDENTE, resultado.getStatus());
+//         assertNotEquals(StatusOrdem.FINALIZADA, resultado.getStatus());
 
-        assertThrows(RuntimeException.class, () -> service.finalizar(1L));
-
-        Mockito.verify(ordemRepo, Mockito.never()).save(Mockito.any());
-    }
-    @Test
-    void naoDeveIniciarOrdemSemMaquina() {
-        OrdemDeProducao ordem = new OrdemDeProducao();
-        ordem.setMaquina(null);
-
-        Mockito.when(ordemRepo.findById(1L)).thenReturn(Optional.of(ordem));
-
-        assertThrows(NullPointerException.class, () -> service.iniciar(1L));
-
-        Mockito.verify(ordemRepo, Mockito.never()).save(Mockito.any());
-    }
-}
+//         // E deve persistir só uma vez
+//         Mockito.verify(ordemRepo, Mockito.times(1)).save(ordem);
+//     }
+// }

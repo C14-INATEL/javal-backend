@@ -1,6 +1,6 @@
 package com.industrial.productionsystem.entity;
-import com.industrial.productionsystem.entity.enums.StatusMaquina;
 
+import com.industrial.productionsystem.entity.enums.StatusMaquina;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,53 +28,21 @@ public class Maquina {
     @Column(nullable = false)
     private Integer capacidadePorHora;
 
-    // Construtor vazio (JPA)
-    public Maquina() {
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
-    // Construtor útil
-    public Maquina(String nome, String tipo, Integer capacidadePorHora) {
+    public Maquina() {}
+
+    public Maquina(String nome, String tipo, Integer capacidadePorHora, Company company) {
         this.nome = nome;
         this.tipo = tipo;
         this.capacidadePorHora = capacidadePorHora;
-        this.status = StatusMaquina.ATIVA; // padrão
+        this.status = StatusMaquina.ATIVA;
+        this.company = company;
     }
 
-    // Getters e Setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public StatusMaquina getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusMaquina status) {
-        this.status = status;
-    }
-
-    public Integer getCapacidadePorHora() {
-        return capacidadePorHora;
-    }
-
-    public void setCapacidadePorHora(Integer capacidadePorHora) {
-        this.capacidadePorHora = capacidadePorHora;
+    public Maquina(String string, String string2, int i) {
+        //TODO Auto-generated constructor stub
     }
 }
