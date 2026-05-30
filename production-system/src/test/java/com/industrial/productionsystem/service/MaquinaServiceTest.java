@@ -1,82 +1,144 @@
-// package com.industrial.productionsystem.service;
+package com.industrial.productionsystem.service;
 
-// import com.industrial.productionsystem.entity.Maquina;
-// import com.industrial.productionsystem.entity.enums.StatusMaquina;
-// import com.industrial.productionsystem.repository.MaquinaRepository;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
+import com.industrial.productionsystem.dto.MaquinaRequest;
+import com.industrial.productionsystem.dto.MaquinaResponse;
+import com.industrial.productionsystem.entity.Company;
+import com.industrial.productionsystem.entity.Maquina;
+import com.industrial.productionsystem.entity.enums.StatusMaquina;
+import com.industrial.productionsystem.repository.CompanyRepository;
+import com.industrial.productionsystem.repository.MaquinaRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-// import java.util.List;
-// import java.util.Optional;
+import java.util.List;
+import java.util.Optional;
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-// @ExtendWith(MockitoExtension.class)
-// class MaquinaServiceTest {
+@ExtendWith(MockitoExtension.class)
+class MaquinaServiceTest {
 
-//     @Mock
-//     private MaquinaRepository repository;
+    @Mock private MaquinaRepository repository;
+    @Mock private CompanyRepository companyRepository;
+    @InjectMocks private MaquinaService service;
 
-//     @InjectMocks
-//     private MaquinaService service;
+    private Company company;
+    private final Long COMPANY_ID = 1L;
 
-//     @Test
-//     void deveCriarMaquina() {
-//         Maquina maquina = new Maquina("Máquina 1", "CNC", 100);
+    @BeforeEach
+    void setUp() {
+        company = new Company();
+        company.setId(COMPANY_ID);
+        company.setName("Empresa Teste");
+    }
 
-//         when(repository.save(maquina)).thenReturn(maquina);
+    // ── helper ──────────────────────────────────────────────────────
 
-//         Maquina resultado = service.criar(maquina);
+    private MaquinaRequest requestValido() {
+        MaquinaRequest req = new MaquinaRequest();
+        req.setNome("Torno CNC 01");
+        req.setTipo("CNC");
+        req.setCapacidadePorHora(100);
+        return req;
+    }
 
-//         assertNotNull(resultado);
-//         assertEquals("Máquina 1", resultado.getNome());
+    private Maquina maquinaSalva(String nome, StatusMaquina status) {
+        Maquina m = new Maquina(nome, "CNC", 100, company);
+        m.setStatus(status);
+        return m;
+    }
 
-//         verify(repository, times(1)).save(maquina);
-//     }
+    // ── criar ────────────────────────────────────────────────────────
 
-//     @Test
-//     void deveListarMaquinas() {
-//         when(repository.findAll()).thenReturn(List.of(new Maquina(), new Maquina()));
+    @Test
+    @DisplayName("Deve criar máquina com status ATIVA por padrão")
+    void deveCriarMaquinaComStatusPadrao() {
+        when(companyRepository.findById(COMPANY_ID)).thenReturn(Optional.of(company));
+        when(repository.save(any())).thenReturn(maquinaSalva("Torno CNC 01", StatusMaquina.ATIVA));
 
-//         List<Maquina> lista = service.listar();
+        MaquinaResponse response = service.criar(requestValido(), COMPANY_ID);
 
-//         assertEquals(2, lista.size());
+        assertNotNull(response);
+        assertEquals("Torno CNC 01", response.getNome());
+        assertEquals(StatusMaquina.ATIVA, response.getStatus());
+        verify(repository, times(1)).save(any());
+    }
 
-//         verify(repository, times(1)).findAll();
-//     }
+    @Test
+    @DisplayName("Deve criar máquina com status informado no request")
+    void deveCriarMaquinaComStatusInformado() {
+        MaquinaRequest req = requestValido();
+        req.setStatus(StatusMaquina.MANUTENCAO);
 
-//     @Test
-//     void deveAtualizarStatusDaMaquina() {
-//         Maquina maquina = new Maquina("Máquina 1", "CNC", 100);
-//         maquina.setStatus(StatusMaquina.ATIVA);
+        Maquina salva = maquinaSalva("Torno CNC 01", StatusMaquina.MANUTENCAO);
 
-//         when(repository.findById(1L)).thenReturn(Optional.of(maquina));
-//         when(repository.save(any())).thenReturn(maquina);
+        when(companyRepository.findById(COMPANY_ID)).thenReturn(Optional.of(company));
+        when(repository.save(any())).thenReturn(salva);
 
-//         Maquina atualizada = service.alterarStatus(1L, StatusMaquina.MANUTENCAO);
+        MaquinaResponse response = service.criar(req, COMPANY_ID);
 
-//         assertEquals(StatusMaquina.MANUTENCAO, atualizada.getStatus());
+        assertEquals(StatusMaquina.MANUTENCAO, response.getStatus());
+    }
 
-//         verify(repository).findById(1L);
-//         verify(repository).save(maquina);
-//     }
+    @Test
+    @DisplayName("Deve lançar exceção ao criar máquina para empresa inexistente")
+    void deveLancarExcecaoEmpresaInexistente() {
+        when(companyRepository.findById(COMPANY_ID)).thenReturn(Optional.empty());
 
-//     @Test
-//     void deveLancarErroQuandoMaquinaNaoExiste() {
-//         when(repository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> service.criar(requestValido(), COMPANY_ID));
+        verify(repository, never()).save(any());
+    }
 
-//         RuntimeException exception = assertThrows(
-//                 RuntimeException.class,
-//                 () -> service.alterarStatus(1L, StatusMaquina.MANUTENCAO)
-//         );
+    // ── listar ───────────────────────────────────────────────────────
 
-//         assertEquals("Máquina não encontrada", exception.getMessage());
+    @Test
+    @DisplayName("Deve listar máquinas filtrando por empresa")
+    void deveListarMaquinasDaEmpresa() {
+        when(repository.findByCompanyId(COMPANY_ID)).thenReturn(
+                List.of(maquinaSalva("M1", StatusMaquina.ATIVA),
+                        maquinaSalva("M2", StatusMaquina.INATIVA)));
 
-//         verify(repository).findById(1L);
-//         verify(repository, never()).save(any());
-//     }
-// }
+        List<MaquinaResponse> lista = service.listar(COMPANY_ID);
+
+        assertEquals(2, lista.size());
+        verify(repository, times(1)).findByCompanyId(COMPANY_ID);
+    }
+
+    // ── alterarStatus ────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Deve alterar status da máquina com sucesso")
+    void deveAlterarStatus() {
+        Maquina maquina = maquinaSalva("Torno", StatusMaquina.ATIVA);
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID)).thenReturn(Optional.of(maquina));
+        when(repository.save(any())).thenReturn(maquina);
+
+        MaquinaResponse response = service.alterarStatus(1L, StatusMaquina.MANUTENCAO, COMPANY_ID);
+
+        assertEquals(StatusMaquina.MANUTENCAO, response.getStatus());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao alterar status de máquina inexistente")
+    void deveLancarExcecaoMaquinaInexistente() {
+        when(repository.findByIdAndCompanyId(99L, COMPANY_ID)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class,
+                () -> service.alterarStatus(99L, StatusMaquina.INATIVA, COMPANY_ID));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao alterar status com valor nulo")
+    void deveLancarExcecaoStatusNulo() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.alterarStatus(1L, null, COMPANY_ID));
+        verify(repository, never()).save(any());
+    }
+}

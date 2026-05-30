@@ -1,85 +1,103 @@
-// package com.industrial.productionsystem.repository;
+package com.industrial.productionsystem.repository;
 
-// import com.industrial.productionsystem.entity.Maquina;
-// import com.industrial.productionsystem.entity.OrdemDeProducao;
-// import com.industrial.productionsystem.entity.Produto;
-// import com.industrial.productionsystem.entity.enums.StatusOrdem;
-// import com.industrial.productionsystem.repository.ProdutoRepository;
-// import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import com.industrial.productionsystem.repository.MaquinaRepository;
-// import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-// import org.springframework.transaction.annotation.Transactional;
-// import org.springframework.test.context.ActiveProfiles;
-// import java.time.LocalDateTime;
-// import java.util.List;
+import com.industrial.productionsystem.entity.*;
+import com.industrial.productionsystem.entity.enums.StatusOrdem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
-// import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+import java.util.Optional;
 
-// @DataJpaTest
-// @ActiveProfiles("test")
-// class OrdemDeProducaoRepositoryTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-//     @Autowired
-//     private OrdemDeProducaoRepository ordemRepo;
+@DataJpaTest
+@ActiveProfiles("test")
+class OrdemDeProducaoRepositoryTest {
 
-//     @Autowired
-//     private ProdutoRepository produtoRepo;
+    @Autowired private OrdemDeProducaoRepository ordemRepository;
+    @Autowired private CompanyRepository companyRepository;
+    @Autowired private ProdutoRepository produtoRepository;
+    @Autowired private MaquinaRepository maquinaRepository;
 
-//     @Autowired
-//     private MaquinaRepository maquinaRepo;
+    private Company company;
+    private Produto produto;
+    private Maquina maquina;
 
-//     @Test
-//     void deveSalvarOrdem() {
+    @BeforeEach
+    void setUp() {
+        company = companyRepository.save(Company.builder()
+                .name("Empresa Teste")
+                .cnpj("12345678000199")
+                .email("teste@empresa.com")
+                .phone("35999990000")
+                .responsibleName("João")
+                .password("hash")
+                .build());
 
-//         Produto produto = produtoRepo.save(criarProdutoValido());
-//         Maquina maquina = maquinaRepo.save(criarMaquinaValida());
+        produto = new Produto();
+        produto.setNome("Engrenagem");
+        produto.setTempoProducaoUnitario(30);
+        produto.setCompany(company);
+        produto = produtoRepository.save(produto);
 
-//         OrdemDeProducao ordem = new OrdemDeProducao();
-//         ordem.setProduto(produto);
-//         ordem.setQuantidade(100);
-//         ordem.setStatus(StatusOrdem.PENDENTE);
-//         ordem.setMaquina(maquina);
-//         ordem.setDataInicio(LocalDateTime.now());
+        maquina = maquinaRepository.save(new Maquina("Torno CNC", "CNC", 100, company));
+    }
 
-//         OrdemDeProducao salva = ordemRepo.save(ordem);
+    private OrdemDeProducao salvarOrdem(StatusOrdem status) {
+        OrdemDeProducao o = new OrdemDeProducao();
+        o.setProduto(produto);
+        o.setMaquina(maquina);
+        o.setQuantidade(100);
+        o.setStatus(status);
+        o.setCompany(company);
+        return ordemRepository.save(o);
+    }
 
-//         assertNotNull(salva.getId());
-//         assertEquals(StatusOrdem.PENDENTE, salva.getStatus());
-//     }
+    @Test
+    @DisplayName("Deve salvar ordem com company, produto e máquina")
+    void deveSalvarOrdem() {
+        OrdemDeProducao salva = salvarOrdem(StatusOrdem.PENDENTE);
 
-//     @Test
-//     void deveBuscarOrdensPorMaquina() {
+        assertNotNull(salva.getId());
+        assertEquals(StatusOrdem.PENDENTE, salva.getStatus());
+        assertEquals(company.getId(), salva.getCompany().getId());
+    }
 
-//         Produto produto = produtoRepo.save(criarProdutoValido());
-//         Maquina maquina = maquinaRepo.save(criarMaquinaValida());
+    @Test
+    @DisplayName("findByCompanyId deve retornar ordens da empresa")
+    void deveFiltrarPorEmpresa() {
+        salvarOrdem(StatusOrdem.PENDENTE);
+        salvarOrdem(StatusOrdem.EM_PRODUCAO);
 
-//         OrdemDeProducao ordem = new OrdemDeProducao();
-//         ordem.setProduto(produto);
-//         ordem.setQuantidade(50);
-//         ordem.setStatus(StatusOrdem.PENDENTE);
-//         ordem.setMaquina(maquina);
+        List<OrdemDeProducao> lista = ordemRepository.findByCompanyId(company.getId());
 
-//         ordemRepo.save(ordem);
+        assertEquals(2, lista.size());
+    }
 
-//         List<OrdemDeProducao> resultado =
-//                 ordemRepo.findByMaquinaId(maquina.getId());
+    @Test
+    @DisplayName("findByIdAndCompanyId deve retornar presente quando IDs batem")
+    void deveEncontrarPorIdEEmpresa() {
+        OrdemDeProducao salva = salvarOrdem(StatusOrdem.PENDENTE);
 
-//         assertFalse(resultado.isEmpty());
-//         assertEquals(maquina.getId(),
-//                 resultado.get(0).getMaquina().getId());
-//     }
+        Optional<OrdemDeProducao> result =
+                ordemRepository.findByIdAndCompanyId(salva.getId(), company.getId());
 
-//     private Produto criarProdutoValido() {
-//         Produto produto = new Produto();
-//         produto.setNome("Produto Teste");
-//         produto.setTempoProducaoUnitario(5);
-//         return produto;
-//     }
+        assertTrue(result.isPresent());
+    }
 
-//     private Maquina criarMaquinaValida() {
-//         return new Maquina("Máquina Teste", "CNC", 100);
-//     }
-// }
+    @Test
+    @DisplayName("findByMaquinaIdAndCompanyId deve retornar ordens da máquina")
+    void deveFiltrarPorMaquinaEEmpresa() {
+        salvarOrdem(StatusOrdem.PENDENTE);
+        salvarOrdem(StatusOrdem.FINALIZADA);
+
+        List<OrdemDeProducao> lista =
+                ordemRepository.findByMaquinaIdAndCompanyId(maquina.getId(), company.getId());
+
+        assertEquals(2, lista.size());
+    }
+}
