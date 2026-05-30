@@ -1,54 +1,128 @@
-// package com.industrial.productionsystem.service;
+package com.industrial.productionsystem.service;
 
-// import com.industrial.productionsystem.entity.Produto;
-// import com.industrial.productionsystem.repository.ProdutoRepository;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
+import com.industrial.productionsystem.dto.ProdutoRequest;
+import com.industrial.productionsystem.dto.ProdutoResponse;
+import com.industrial.productionsystem.entity.Company;
+import com.industrial.productionsystem.entity.Produto;
+import com.industrial.productionsystem.repository.CompanyRepository;
+import com.industrial.productionsystem.repository.ProdutoRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.Mockito.*;
+import java.util.List;
+import java.util.Optional;
 
-// @ExtendWith(MockitoExtension.class)
-// class ProdutoServiceTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-//     @Mock
-//     private ProdutoRepository repository;
+@ExtendWith(MockitoExtension.class)
+class ProdutoServiceTest {
 
-//     @InjectMocks
-//     private ProdutoService produtoService;
+    @Mock private ProdutoRepository repository;
+    @Mock private CompanyRepository companyRepository;
+    @InjectMocks private ProdutoService service;
 
-//     @Test
-//     void deveCriarProdutoComSucesso() {
-//         Produto produto = new Produto();
-//         produto.setNome("Produto Teste");
-//         produto.setTempoProducaoUnitario(10);
+    private Company company;
+    private final Long COMPANY_ID = 1L;
 
-//         when(repository.save(any())).thenReturn(produto);
+    @BeforeEach
+    void setUp() {
+        company = new Company();
+        company.setId(COMPANY_ID);
+        company.setName("Empresa Teste");
+    }
 
-//         Produto resultado = produtoService.criar(produto);
+    private ProdutoRequest requestValido() {
+        ProdutoRequest req = new ProdutoRequest();
+        req.setNome("Engrenagem Industrial");
+        req.setTempoProducaoUnitario(30);
+        return req;
+    }
 
-//         assertNotNull(resultado);
-//         assertEquals("Produto Teste", resultado.getNome());
+    private Produto produtoSalvo(String nome) {
+        Produto p = new Produto();
+        p.setId(1L);
+        p.setNome(nome);
+        p.setTempoProducaoUnitario(30);
+        p.setCompany(company);
+        return p;
+    }
 
-//         verify(repository, times(1)).save(produto);
-//     }
+    // ── criar ────────────────────────────────────────────────────────
 
-//     @Test
-//     void deveLancarErroQuandoTempoInvalido() {
-//         Produto produto = new Produto();
-//         produto.setNome("Produto Teste");
-//         produto.setTempoProducaoUnitario(0);
+    @Test
+    @DisplayName("Deve criar produto com sucesso")
+    void deveCriarProduto() {
+        when(companyRepository.findById(COMPANY_ID)).thenReturn(Optional.of(company));
+        when(repository.save(any())).thenReturn(produtoSalvo("Engrenagem Industrial"));
 
-//         IllegalArgumentException exception = assertThrows(
-//                 IllegalArgumentException.class,
-//                 () -> produtoService.criar(produto)
-//         );
+        ProdutoResponse response = service.criar(requestValido(), COMPANY_ID);
 
-//         assertEquals("Tempo de produção deve ser maior que zero", exception.getMessage());
+        assertNotNull(response);
+        assertEquals("Engrenagem Industrial", response.getNome());
+        assertEquals(COMPANY_ID, response.getCompanyId());
+        verify(repository, times(1)).save(any());
+    }
 
-//         verify(repository, never()).save(any());
-//     }
-// }
+    @Test
+    @DisplayName("Deve lançar exceção ao criar produto para empresa inexistente")
+    void deveLancarExcecaoEmpresaInexistente() {
+        when(companyRepository.findById(COMPANY_ID)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class,
+                () -> service.criar(requestValido(), COMPANY_ID));
+        verify(repository, never()).save(any());
+    }
+
+    // ── listar ───────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Deve listar apenas produtos da empresa")
+    void deveListarProdutosDaEmpresa() {
+        when(repository.findByCompanyId(COMPANY_ID))
+                .thenReturn(List.of(produtoSalvo("P1"), produtoSalvo("P2")));
+
+        List<ProdutoResponse> lista = service.listar(COMPANY_ID);
+
+        assertEquals(2, lista.size());
+        verify(repository, times(1)).findByCompanyId(COMPANY_ID);
+    }
+
+    @Test
+    @DisplayName("Deve retornar lista vazia quando empresa não tem produtos")
+    void deveRetornarListaVazia() {
+        when(repository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
+
+        List<ProdutoResponse> lista = service.listar(COMPANY_ID);
+
+        assertTrue(lista.isEmpty());
+    }
+
+    // ── deletar ──────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Deve deletar produto com sucesso")
+    void deveDeletarProduto() {
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(produtoSalvo("P1")));
+
+        assertDoesNotThrow(() -> service.deletar(1L, COMPANY_ID));
+        verify(repository, times(1)).delete(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar produto de outra empresa")
+    void deveLancarExcecaoAoDeletarProdutoDeOutraEmpresa() {
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class,
+                () -> service.deletar(1L, COMPANY_ID));
+        verify(repository, never()).delete(any());
+    }
+}

@@ -8,6 +8,7 @@ import com.industrial.productionsystem.entity.enums.StatusOrdem;
 import com.industrial.productionsystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,16 +22,15 @@ public class OrdemDeProducaoService {
     private final MaquinaRepository maquinaRepository;
     private final CompanyRepository companyRepository;
 
+    @Transactional
     public OrdemResponse criar(OrdemRequest request, Long companyId) {
 
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
 
-        // Garante que produto pertence à empresa
         Produto produto = produtoRepository.findByIdAndCompanyId(request.getProdutoId(), companyId)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado nesta empresa"));
 
-        // Garante que máquina pertence à empresa
         Maquina maquina = maquinaRepository.findByIdAndCompanyId(request.getMaquinaId(), companyId)
                 .orElseThrow(() -> new IllegalArgumentException("Máquina não encontrada nesta empresa"));
 
@@ -48,6 +48,7 @@ public class OrdemDeProducaoService {
         return OrdemResponse.from(repository.save(ordem));
     }
 
+    @Transactional(readOnly = true)
     public List<OrdemResponse> listar(Long companyId) {
         return repository.findByCompanyId(companyId)
                 .stream()
@@ -55,6 +56,7 @@ public class OrdemDeProducaoService {
                 .toList();
     }
 
+    @Transactional
     public OrdemResponse iniciar(Long id, Long companyId) {
         OrdemDeProducao ordem = repository.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new RuntimeException("Ordem não encontrada"));
@@ -73,6 +75,7 @@ public class OrdemDeProducaoService {
         return OrdemResponse.from(repository.save(ordem));
     }
 
+    @Transactional
     public OrdemResponse finalizar(Long id, Long companyId) {
         OrdemDeProducao ordem = repository.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new RuntimeException("Ordem não encontrada"));
