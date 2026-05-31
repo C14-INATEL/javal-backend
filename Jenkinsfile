@@ -26,6 +26,25 @@ pipeline {
             }
         }
 
+        // ─────────────────────────────────────────────────
+        // PETTRIUS — Testes de Controller e Repository
+        // ─────────────────────────────────────────────────
+        stage('Testes Controller e Repository - Pettrius') {
+            steps {
+                dir("${WORKDIR}") {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw test -Dtest="*ControllerTest,*RepositoryTest"'
+                }
+            }
+            post {
+                always {
+                    junit 'production-system/target/surefire-reports/*.xml'
+                }
+                success { echo 'Testes de Controller e Repository passaram.' }
+                failure { echo 'Falha nos testes de Controller/Repository.' }
+            }
+        }
+
     }
 
     post {
