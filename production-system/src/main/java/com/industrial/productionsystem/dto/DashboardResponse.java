@@ -23,6 +23,8 @@ public class DashboardResponse {
     private long totalProdutos;
 
     // ── Ordens ────────────────────────────────────────────────────
+    private long totalProdutos;
+
     private long totalOrdens;
     private long ordensPendentes;
     private long ordensEmProducao;
@@ -32,6 +34,15 @@ public class DashboardResponse {
     private long totalUnidadesEmAberto;
 
     // ── Ranking de máquinas (top 5 por ordens finalizadas) ────────
+    // ── Produção ─────────────────────────────────────────────────────
+    /** Soma de quantidade das ordens FINALIZADAS */
+    private long totalUnidadesProduzidas;
+
+    /** Soma de quantidade das ordens PENDENTES + EM_PRODUCAO */
+    private long totalUnidadesEmAberto;
+
+    // ── Ranking de máquinas ──────────────────────────────────────────
+    /** Top 5 máquinas por número de ordens finalizadas */
     private List<MaquinaRankingItem> topMaquinas;
 
     @Data
