@@ -13,12 +13,14 @@ import com.industrial.productionsystem.repository.FalhaMaquinaRepository;
 import com.industrial.productionsystem.repository.MaquinaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class FalhaMaquinaService {
 
     private final FalhaMaquinaRepository repository;
