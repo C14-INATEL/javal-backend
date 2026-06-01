@@ -45,6 +45,16 @@ pipeline {
             }
         }
 
+        // ─────────────────────────────────────────────────
+        // João — Gera o arquivo .jar e arquiva no jenkins
+        // ─────────────────────────────────────────────────
+        stage('Package - João') {
+            steps {
+                sh 'mvn package -DskipTests'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+
     }
 
     post {
