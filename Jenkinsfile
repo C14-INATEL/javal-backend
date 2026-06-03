@@ -83,8 +83,11 @@ pipeline {
         // ─────────────────────────────────────────────────
         stage('Package - João') {
             steps {
-                sh 'mvn package -DskipTests'
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                dir("${WORKDIR}") {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw package -DskipTests'
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
             }
         }
 
