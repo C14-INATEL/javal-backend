@@ -46,6 +46,35 @@ pipeline {
         }
 
         // ─────────────────────────────────────────────────
+        // Vinicius — Testes de Serice e Entity
+        // ─────────────────────────────────────────────────
+        stage('Testes Service e Entity - Vinicius') {
+            steps {
+                dir("${WORKDIR}") {
+                    sh '''
+                        chmod +x mvnw
+
+                        ./mvnw test \
+                        -Dtest="*ServiceTest,CompanyTest,MaquinaTest,ProdutoTest,OrdemDeProducaoTest"
+                    '''
+                }
+            }
+            post {
+                always {
+                    junit 'production-system/target/surefire-reports/*.xml'
+                }
+                success {
+                    echo 'Testes de Service e Entity passaram.'
+                }
+                failure {
+                    echo 'Falha nos testes de Service e Entity.'
+                }
+            }
+        }
+
+
+
+        // ─────────────────────────────────────────────────
         // João — Gera o arquivo .jar e arquiva no jenkins
         // ─────────────────────────────────────────────────
         stage('Package - João') {
