@@ -46,26 +46,29 @@ pipeline {
         }
 
         // ─────────────────────────────────────────────────
-        // Vinicius — Testes de Serice e Entity
+        // Vinicius — Testes Unitários (Service e Entity)
         // ─────────────────────────────────────────────────
         stage('Testes Service e Entity - Vinicius') {
             steps {
                 dir("${WORKDIR}") {
-                    sh '''
-                        chmod +x mvnw
+                    sh 'chmod +x mvnw'
 
+                    sh '''
                         ./mvnw test \
                         -Dtest="*ServiceTest,CompanyTest,MaquinaTest,ProdutoTest,OrdemDeProducaoTest"
                     '''
                 }
             }
+
             post {
                 always {
                     junit 'production-system/target/surefire-reports/*.xml'
                 }
+
                 success {
-                    echo 'Testes de Service e Entity passaram.'
+                    echo 'Testes de Service e Entity executados com sucesso.'
                 }
+
                 failure {
                     echo 'Falha nos testes de Service e Entity.'
                 }
