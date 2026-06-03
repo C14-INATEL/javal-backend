@@ -1,4 +1,7 @@
 package com.industrial.productionsystem.controller;
+import com.industrial.productionsystem.security.JwtAuthFilter;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.industrial.productionsystem.dto.CompanyRegisterRequest;
@@ -20,7 +23,10 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CompanyController.class)
+@WebMvcTest(
+        controllers = CompanyController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtAuthFilter.class)
+)
 @WithMockUser
 class CompanyControllerTest {
 

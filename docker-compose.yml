@@ -13,6 +13,29 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U javal_user -d javal_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ./production-system
+      dockerfile: Dockerfile
+    container_name: javal-app
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/javal_db
+      SPRING_DATASOURCE_USERNAME: javal_user
+      SPRING_DATASOURCE_PASSWORD: javal_pass
+      JWT_SECRET: javal-secret-key-muito-segura-minimo-256bits
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
