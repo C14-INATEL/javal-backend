@@ -38,7 +38,7 @@ pipeline {
             }
             post {
                 always {
-                    unit allowEmptyResults: true,
+                    junit allowEmptyResults: true,
                           testResults: 'production-system/target/surefire-reports/*.xml'
 
                 }
