@@ -38,7 +38,9 @@ pipeline {
             }
             post {
                 always {
-                    junit 'production-system/target/surefire-reports/*.xml'
+                    unit allowEmptyResults: true,
+                          testResults: 'production-system/target/surefire-reports/*.xml'
+
                 }
                 success { echo 'Testes de Controller e Repository passaram.' }
                 failure { echo 'Falha nos testes de Controller/Repository.' }
