@@ -33,14 +33,13 @@ pipeline {
             steps {
                 dir("${WORKDIR}") {
                     sh 'chmod +x mvnw'
-                    sh './mvnw test -Dtest="*ControllerTest,*RepositoryTest"'
+                    sh './mvnw test -Dspring.profiles.active=test -Dtest="*ControllerTest,*RepositoryTest"'
                 }
             }
             post {
                 always {
                     junit allowEmptyResults: true,
                           testResults: 'production-system/target/surefire-reports/*.xml'
-
                 }
                 success { echo 'Testes de Controller e Repository passaram.' }
                 failure { echo 'Falha nos testes de Controller/Repository.' }
@@ -54,31 +53,26 @@ pipeline {
             steps {
                 dir("${WORKDIR}") {
                     sh 'chmod +x mvnw'
-
                     sh '''
                         ./mvnw test \
+                        -Dspring.profiles.active=test \
                         -Dtest="*ServiceTest,CompanyTest,MaquinaTest,ProdutoTest,OrdemDeProducaoTest"
                     '''
                 }
             }
-
             post {
                 always {
                     junit allowEmptyResults: true,
                           testResults: 'production-system/target/surefire-reports/*.xml'
                 }
-
                 success {
                     echo 'Testes de Service e Entity executados com sucesso.'
                 }
-
                 failure {
                     echo 'Falha nos testes de Service e Entity.'
                 }
             }
         }
-
-
 
         // ─────────────────────────────────────────────────
         // João — Gera o arquivo .jar e arquiva no jenkins
