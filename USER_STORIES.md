@@ -20,19 +20,19 @@
 ### Critérios de aceitação
 
 **Cenário 1 — Cadastro bem-sucedido**
-- **Given** os dados da empresa (nome, CNPJ, e-mail, telefone, responsável, senha) são válidos e o e-mail e CNPJ ainda não estão cadastrados
-- **When** o gestor envia o formulário de cadastro
-- **Then** a empresa é criada e o sistema retorna HTTP 201 com os dados cadastrados
+- **Given** empresa com dados válidos e únicos no sistema
+- **When** o gestor envia o cadastro
+- **Then** sistema retorna 201 com os dados da empresa criada
 
 **Cenário 2 — E-mail já cadastrado**
-- **Given** o e-mail informado já existe no banco
+- **Given** e-mail informado já existe no banco
 - **When** o gestor tenta cadastrar
-- **Then** o sistema retorna HTTP 400 com mensagem de erro informando o conflito
+- **Then** sistema retorna 400 com mensagem de conflito
 
 **Cenário 3 — CNPJ já cadastrado**
-- **Given** o CNPJ informado já existe no banco
+- **Given** CNPJ informado já existe no banco
 - **When** o gestor tenta cadastrar
-- **Then** o sistema retorna HTTP 400 com mensagem de erro informando o conflito
+- **Then** sistema retorna 400 com mensagem de conflito
 
 ---
 
@@ -51,19 +51,19 @@
 ### Critérios de aceitação
 
 **Cenário 1 — Login com credenciais válidas**
-- **Given** a empresa está cadastrada e as credenciais estão corretas
+- **Given** empresa cadastrada com credenciais corretas
 - **When** o gestor envia e-mail e senha
-- **Then** o sistema retorna HTTP 200 com token JWT e o companyId da empresa
+- **Then** sistema retorna 200 com token JWT e companyId
 
 **Cenário 2 — Credenciais inválidas**
-- **Given** a senha informada está incorreta
+- **Given** senha incorreta
 - **When** o gestor tenta fazer login
-- **Then** o sistema retorna HTTP 401
+- **Then** sistema retorna 401
 
-**Cenário 3 — Acesso a rota protegida sem token**
-- **Given** o gestor não está autenticado
-- **When** tenta acessar qualquer endpoint protegido
-- **Then** o sistema retorna HTTP 403
+**Cenário 3 — Acesso sem token**
+- **Given** gestor não autenticado
+- **When** tenta acessar endpoint protegido
+- **Then** sistema retorna 403
 
 ---
 
@@ -82,19 +82,19 @@
 ### Critérios de aceitação
 
 **Cenário 1 — Cadastro bem-sucedido**
-- **Given** o gestor está autenticado e informa nome, tipo e capacidade por hora
+- **Given** gestor autenticado com dados válidos de máquina
 - **When** envia o formulário de cadastro
-- **Then** a máquina é criada com status ATIVA e vinculada à empresa do gestor, retornando HTTP 201
+- **Then** máquina criada com status ATIVA vinculada à empresa, retorna 201
 
-**Cenário 2 — Dados obrigatórios ausentes**
-- **Given** o campo nome está vazio
+**Cenário 2 — Nome ausente**
+- **Given** campo nome vazio
 - **When** o gestor tenta cadastrar
-- **Then** o sistema retorna HTTP 400 sem criar a máquina
+- **Then** sistema retorna 400
 
 **Cenário 3 — Isolamento por empresa**
 - **Given** existem máquinas de outras empresas no banco
 - **When** o gestor lista suas máquinas
-- **Then** o sistema retorna apenas as máquinas da empresa autenticada
+- **Then** sistema retorna apenas máquinas da empresa autenticada
 
 ---
 
@@ -113,19 +113,19 @@
 ### Critérios de aceitação
 
 **Cenário 1 — Alteração bem-sucedida**
-- **Given** a máquina pertence à empresa do gestor autenticado
-- **When** o gestor altera o status para MANUTENCAO
-- **Then** o sistema salva o novo status e retorna HTTP 200
+- **Given** máquina pertence à empresa autenticada
+- **When** gestor altera o status para MANUTENCAO
+- **Then** sistema salva o novo status e retorna 200
 
 **Cenário 2 — Máquina de outra empresa**
-- **Given** o ID informado pertence a uma máquina de outra empresa
-- **When** o gestor tenta alterar o status
-- **Then** o sistema retorna HTTP 404
+- **Given** ID informado pertence a máquina de outra empresa
+- **When** gestor tenta alterar o status
+- **Then** sistema retorna 404
 
 **Cenário 3 — Status nulo**
-- **Given** o gestor não informa o status
-- **When** tenta fazer a alteração
-- **Then** o sistema retorna HTTP 400
+- **Given** status não informado no request
+- **When** gestor tenta fazer a alteração
+- **Then** sistema retorna 400
 
 ---
 
@@ -144,19 +144,19 @@
 ### Critérios de aceitação
 
 **Cenário 1 — Cadastro bem-sucedido**
-- **Given** o gestor informa nome e tempo de produção unitário válidos
+- **Given** gestor autenticado com dados válidos de produto
 - **When** envia o formulário
-- **Then** o produto é criado vinculado à empresa e o sistema retorna HTTP 201
+- **Then** produto criado vinculado à empresa, retorna 201
 
 **Cenário 2 — Nome ausente**
-- **Given** o campo nome está vazio
-- **When** o gestor tenta cadastrar
-- **Then** o sistema retorna HTTP 400
+- **Given** campo nome vazio
+- **When** gestor tenta cadastrar
+- **Then** sistema retorna 400
 
 **Cenário 3 — Listagem isolada por empresa**
 - **Given** existem produtos de outras empresas no banco
-- **When** o gestor lista os produtos
-- **Then** o sistema retorna apenas os produtos da empresa autenticada
+- **When** gestor lista os produtos
+- **Then** sistema retorna apenas produtos da empresa autenticada
 
 ---
 
@@ -175,29 +175,29 @@
 ### Critérios de aceitação
 
 **Cenário 1 — Criação bem-sucedida**
-- **Given** produto e máquina pertencem à empresa e a máquina está ATIVA
-- **When** o gestor cria a ordem informando produto, máquina e quantidade
-- **Then** a ordem é criada com status PENDENTE e retorna HTTP 201
+- **Given** produto e máquina ATIVA pertencem à empresa autenticada
+- **When** gestor cria ordem com produto, máquina e quantidade
+- **Then** ordem criada com status PENDENTE, retorna 201
 
-**Cenário 2 — Máquina inativa bloqueada**
-- **Given** a máquina está INATIVA
-- **When** o gestor tenta criar a ordem
-- **Then** o sistema retorna HTTP 400 informando que a máquina não pode receber ordens
+**Cenário 2 — Máquina inativa**
+- **Given** máquina selecionada está INATIVA
+- **When** gestor tenta criar a ordem
+- **Then** sistema retorna 400
 
 **Cenário 3 — Iniciar ordem**
-- **Given** a ordem está PENDENTE e a máquina está ATIVA
-- **When** o gestor inicia a ordem
-- **Then** o status muda para EM_PRODUCAO e a dataInicio é registrada
+- **Given** ordem está PENDENTE e máquina está ATIVA
+- **When** gestor inicia a ordem
+- **Then** status muda para EM_PRODUCAO e dataInicio é registrada
 
 **Cenário 4 — Finalizar ordem**
-- **Given** a ordem está EM_PRODUCAO
-- **When** o gestor finaliza a ordem
-- **Then** o status muda para FINALIZADA e a dataFim é registrada
+- **Given** ordem está EM_PRODUCAO
+- **When** gestor finaliza a ordem
+- **Then** status muda para FINALIZADA e dataFim é registrada
 
-**Cenário 5 — Bloqueio de transição inválida**
-- **Given** a ordem está PENDENTE
-- **When** o gestor tenta finalizá-la diretamente
-- **Then** o sistema retorna HTTP 400
+**Cenário 5 — Transição inválida**
+- **Given** ordem está PENDENTE
+- **When** gestor tenta finalizá-la diretamente
+- **Then** sistema retorna 400
 
 ---
 
@@ -216,19 +216,19 @@
 ### Critérios de aceitação
 
 **Cenário 1 — Registro bem-sucedido**
-- **Given** a máquina pertence à empresa e está operacional
-- **When** o gestor registra uma falha informando tipo e descrição
-- **Then** a falha é criada, a máquina muda para MANUTENCAO automaticamente e retorna HTTP 201
+- **Given** máquina pertence à empresa autenticada
+- **When** gestor registra falha com tipo e descrição
+- **Then** falha criada, máquina muda para MANUTENCAO automaticamente, retorna 201
 
 **Cenário 2 — Máquina de outra empresa**
-- **Given** o ID informado não pertence à empresa do gestor
+- **Given** ID informado não pertence à empresa do gestor
 - **When** tenta registrar a falha
-- **Then** o sistema retorna HTTP 404
+- **Then** sistema retorna 404
 
 **Cenário 3 — Descrição ausente**
-- **Given** o campo descrição está vazio
-- **When** o gestor tenta registrar
-- **Then** o sistema retorna HTTP 400
+- **Given** campo descrição vazio
+- **When** gestor tenta registrar
+- **Then** sistema retorna 400
 
 ---
 
@@ -246,20 +246,20 @@
 
 ### Critérios de aceitação
 
-**Cenário 1 — Resolução quando é a única falha aberta**
-- **Given** existe apenas uma falha aberta na máquina
-- **When** o gestor resolve a falha informando a descrição da solução
-- **Then** a falha recebe dataResolucao, a máquina volta para ATIVA e retorna HTTP 200
+**Cenário 1 — Resolução com única falha aberta**
+- **Given** apenas uma falha aberta na máquina
+- **When** gestor resolve informando a descrição da solução
+- **Then** falha recebe dataResolucao, máquina volta para ATIVA, retorna 200
 
 **Cenário 2 — Resolução com outra falha ainda aberta**
-- **Given** existem duas falhas abertas na mesma máquina
-- **When** o gestor resolve apenas uma
-- **Then** a falha é resolvida mas a máquina permanece em MANUTENCAO
+- **Given** duas falhas abertas na mesma máquina
+- **When** gestor resolve apenas uma
+- **Then** falha é resolvida mas máquina permanece em MANUTENCAO
 
 **Cenário 3 — Falha já resolvida**
-- **Given** a falha já possui dataResolucao
-- **When** o gestor tenta resolver novamente
-- **Then** o sistema retorna HTTP 400
+- **Given** falha já possui dataResolucao
+- **When** gestor tenta resolver novamente
+- **Then** sistema retorna 400
 
 ---
 
