@@ -5,6 +5,7 @@ import com.industrial.productionsystem.dto.OrdemResponse;
 import com.industrial.productionsystem.entity.*;
 import com.industrial.productionsystem.entity.enums.StatusMaquina;
 import com.industrial.productionsystem.entity.enums.StatusOrdem;
+import com.industrial.productionsystem.exception.NotFoundException;
 import com.industrial.productionsystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,13 +27,13 @@ public class OrdemDeProducaoService {
     public OrdemResponse criar(OrdemRequest request, Long companyId) {
 
         Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Empresa não encontrada"));
 
         Produto produto = produtoRepository.findByIdAndCompanyId(request.getProdutoId(), companyId)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado nesta empresa"));
+                .orElseThrow(() -> new NotFoundException("Produto não encontrado nesta empresa"));
 
         Maquina maquina = maquinaRepository.findByIdAndCompanyId(request.getMaquinaId(), companyId)
-                .orElseThrow(() -> new IllegalArgumentException("Máquina não encontrada nesta empresa"));
+                .orElseThrow(() -> new NotFoundException("Máquina não encontrada nesta empresa"));
 
         if (maquina.getStatus() == StatusMaquina.INATIVA) {
             throw new IllegalArgumentException("Máquina está inativa e não pode receber ordens");
@@ -59,7 +60,7 @@ public class OrdemDeProducaoService {
     @Transactional
     public OrdemResponse iniciar(Long id, Long companyId) {
         OrdemDeProducao ordem = repository.findByIdAndCompanyId(id, companyId)
-                .orElseThrow(() -> new RuntimeException("Ordem não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Ordem não encontrada"));
 
         if (ordem.getStatus() != StatusOrdem.PENDENTE) {
             throw new IllegalArgumentException("Apenas ordens PENDENTES podem ser iniciadas");
@@ -78,7 +79,7 @@ public class OrdemDeProducaoService {
     @Transactional
     public OrdemResponse finalizar(Long id, Long companyId) {
         OrdemDeProducao ordem = repository.findByIdAndCompanyId(id, companyId)
-                .orElseThrow(() -> new RuntimeException("Ordem não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Ordem não encontrada"));
 
         if (ordem.getStatus() != StatusOrdem.EM_PRODUCAO) {
             throw new IllegalArgumentException("Apenas ordens EM_PRODUCAO podem ser finalizadas");
