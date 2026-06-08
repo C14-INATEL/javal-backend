@@ -5,6 +5,7 @@ import com.industrial.productionsystem.dto.MaquinaResponse;
 import com.industrial.productionsystem.entity.Company;
 import com.industrial.productionsystem.entity.Maquina;
 import com.industrial.productionsystem.entity.enums.StatusMaquina;
+import com.industrial.productionsystem.exception.NotFoundException;
 import com.industrial.productionsystem.repository.CompanyRepository;
 import com.industrial.productionsystem.repository.MaquinaRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class MaquinaService {
     public MaquinaResponse criar(MaquinaRequest request, Long companyId) {
 
         Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Empresa não encontrada"));
 
         Maquina maquina = new Maquina(
                 request.getNome(),
@@ -52,7 +53,7 @@ public class MaquinaService {
         }
 
         Maquina maquina = repository.findByIdAndCompanyId(id, companyId)
-                .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Máquina não encontrada"));
 
         maquina.setStatus(status);
         return MaquinaResponse.from(repository.save(maquina));
@@ -60,12 +61,8 @@ public class MaquinaService {
 
     public void deletar(Long id, Long companyId) {
         Maquina maquina = repository.findByIdAndCompanyId(id, companyId)
-                .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Máquina não encontrada"));
         repository.delete(maquina);
     }
 
-    public Object criar(MaquinaRequest any) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'criar'");
-    }
 }
