@@ -1,5 +1,6 @@
 package com.industrial.productionsystem.service;
 
+import com.industrial.productionsystem.exception.NotFoundException;
 import com.industrial.productionsystem.dto.OrdemRequest;
 import com.industrial.productionsystem.dto.OrdemResponse;
 import com.industrial.productionsystem.entity.*;
@@ -97,17 +98,21 @@ class OrdemDeProducaoServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.criar(requestValido(), COMPANY_ID));
+
         verify(repository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando produto não pertence à empresa")
+    @DisplayName("Deve lançar NotFoundException quando produto não pertence à empresa")
     void deveLancarExcecaoProdutoDeOutraEmpresa() {
         when(companyRepository.findById(COMPANY_ID)).thenReturn(Optional.of(company));
         when(produtoRepository.findByIdAndCompanyId(10L, COMPANY_ID)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> service.criar(requestValido(), COMPANY_ID));
+
+        assertEquals("Produto não encontrado nesta empresa", exception.getMessage());
+        verify(repository, never()).save(any());
     }
 
     // ── iniciar ──────────────────────────────────────────────────────
@@ -134,6 +139,8 @@ class OrdemDeProducaoServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.iniciar(1L, COMPANY_ID));
+
+        verify(repository, never()).save(any());
     }
 
     @Test
@@ -146,6 +153,8 @@ class OrdemDeProducaoServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.iniciar(1L, COMPANY_ID));
+
+        verify(repository, never()).save(any());
     }
 
     @Test
@@ -185,13 +194,19 @@ class OrdemDeProducaoServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.finalizar(1L, COMPANY_ID));
+
+        verify(repository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao iniciar ordem inexistente")
+    @DisplayName("Deve lançar NotFoundException ao iniciar ordem inexistente")
     void deveLancarExcecaoOrdemInexistente() {
         when(repository.findByIdAndCompanyId(99L, COMPANY_ID)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.iniciar(99L, COMPANY_ID));
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> service.iniciar(99L, COMPANY_ID));
+
+        assertEquals("Ordem não encontrada", exception.getMessage());
+        verify(repository, never()).save(any());
     }
 }
