@@ -42,7 +42,10 @@ public class Maquina {
         this.company = company;
     }
 
-    public Maquina(String string, String string2, int i) {
-        //TODO Auto-generated constructor stub
+    public Maquina(String nome, String tipo, int capacidadePorHora) {
+        this.nome = nome;
+        this.tipo = tipo;
+        this.capacidadePorHora = capacidadePorHora;
+        this.status = StatusMaquina.ATIVA;
     }
 }

@@ -39,6 +39,7 @@ class DashboardServiceTest {
         company.setId(COMPANY_ID);
 
         maquinaAtiva = new Maquina("Torno CNC", "CNC", 100, company);
+        maquinaAtiva.setId(1L);
         maquinaAtiva.setStatus(StatusMaquina.ATIVA);
 
         produto = new Produto();
@@ -104,6 +105,7 @@ class DashboardServiceTest {
     @DisplayName("Deve montar topMaquinas com a máquina mais produtiva primeiro")
     void deveOrdenarTopMaquinas() {
         Maquina maquina2 = new Maquina("Fresadora", "Fresagem", 80, company);
+        maquina2.setId(2L);
         maquina2.setStatus(StatusMaquina.ATIVA);
 
         OrdemDeProducao o1 = criarOrdem(StatusOrdem.FINALIZADA, 100);
