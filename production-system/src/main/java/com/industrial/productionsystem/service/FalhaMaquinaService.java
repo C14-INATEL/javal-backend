@@ -20,13 +20,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class FalhaMaquinaService {
 
     private final FalhaMaquinaRepository repository;
     private final MaquinaRepository maquinaRepository;
     private final CompanyRepository companyRepository;
 
+    @Transactional
     public FalhaMaquinaResponse registrar(FalhaMaquinaRequest request, Long companyId) {
 
         Company company = companyRepository.findById(companyId)
@@ -35,23 +35,15 @@ public class FalhaMaquinaService {
         Maquina maquina = maquinaRepository.findByIdAndCompanyId(request.getMaquinaId(), companyId)
                 .orElseThrow(() -> new NotFoundException("Máquina não encontrada"));
 
-        FalhaMaquina falha = new FalhaMaquina();
-        falha.setDescricao(request.getDescricao());
-        falha.setSeveridade(request.getSeveridade());
-        falha.setStatus(StatusFalha.ABERTA);
-        falha.setDataAbertura(LocalDateTime.now());
-        falha.setMaquina(maquina);
-        falha.setCompany(company);
-
+        FalhaMaquina falha = construirFalha(request, maquina, company);
         FalhaMaquina salva = repository.save(falha);
 
-        // Regra de negócio: registrar uma falha coloca a máquina em manutenção
-        maquina.setStatus(StatusMaquina.MANUTENCAO);
-        maquinaRepository.save(maquina);
+        colocarMaquinaEmManutencao(maquina);
 
         return FalhaMaquinaResponse.from(salva);
     }
 
+    @Transactional(readOnly = true)
     public List<FalhaMaquinaResponse> listar(Long companyId) {
         return repository.findByCompanyId(companyId)
                 .stream()
@@ -59,6 +51,7 @@ public class FalhaMaquinaService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<FalhaMaquinaResponse> listarPorMaquina(Long maquinaId, Long companyId) {
         return repository.findByMaquinaIdAndCompanyId(maquinaId, companyId)
                 .stream()
@@ -66,6 +59,7 @@ public class FalhaMaquinaService {
                 .toList();
     }
 
+    @Transactional
     public FalhaMaquinaResponse resolver(Long id, Long companyId) {
 
         FalhaMaquina falha = repository.findByIdAndCompanyId(id, companyId)
@@ -75,9 +69,28 @@ public class FalhaMaquinaService {
         falha.setDataResolucao(LocalDateTime.now());
         FalhaMaquina salva = repository.save(falha);
 
-        // Regra de negócio: se não houver mais nenhuma falha aberta,
-        // a máquina volta a ficar ativa
-        Maquina maquina = falha.getMaquina();
+        tentarReativarMaquina(falha.getMaquina());
+
+        return FalhaMaquinaResponse.from(salva);
+    }
+
+    private FalhaMaquina construirFalha(FalhaMaquinaRequest request, Maquina maquina, Company company) {
+        FalhaMaquina falha = new FalhaMaquina();
+        falha.setDescricao(request.getDescricao());
+        falha.setSeveridade(request.getSeveridade());
+        falha.setStatus(StatusFalha.ABERTA);
+        falha.setDataAbertura(LocalDateTime.now());
+        falha.setMaquina(maquina);
+        falha.setCompany(company);
+        return falha;
+    }
+
+    private void colocarMaquinaEmManutencao(Maquina maquina) {
+        maquina.setStatus(StatusMaquina.MANUTENCAO);
+        maquinaRepository.save(maquina);
+    }
+
+    private void tentarReativarMaquina(Maquina maquina) {
         boolean aindaTemFalhaAberta =
                 repository.existsByMaquinaIdAndStatus(maquina.getId(), StatusFalha.ABERTA);
 
@@ -85,7 +98,5 @@ public class FalhaMaquinaService {
             maquina.setStatus(StatusMaquina.ATIVA);
             maquinaRepository.save(maquina);
         }
-
-        return FalhaMaquinaResponse.from(salva);
     }
 }
