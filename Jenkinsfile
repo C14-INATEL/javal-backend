@@ -87,6 +87,21 @@ pipeline {
             }
         }
 
+        // ─────────────────────────────────────────────────
+        // ANA — Docker Build da imagem da aplicação
+        // ─────────────────────────────────────────────────
+        stage('Docker Build - Ana') {
+            steps {
+                dir("${WORKDIR}") {
+                    sh 'docker build -t production-system:${BUILD_NUMBER} .'
+                }
+            }
+            post {
+                success { echo 'Imagem Docker gerada com sucesso.' }
+                failure { echo 'Falha ao gerar imagem Docker.' }
+            }
+        }
+
     }
 
     post {
