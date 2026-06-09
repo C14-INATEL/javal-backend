@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProdutoTest {
+class ProdutoEntityTest {
 
     @Test
     @DisplayName("Deve criar produto e permitir manipulação dos atributos")

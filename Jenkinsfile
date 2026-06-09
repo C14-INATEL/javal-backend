@@ -56,7 +56,7 @@ pipeline {
                     sh '''
                         ./mvnw test \
                         -Dspring.profiles.active=test \
-                        -Dtest="*ServiceTest,CompanyTest,MaquinaTest,ProdutoTest,OrdemDeProducaoTest"
+                        -Dtest="*ServiceTest,*EntityTest"
                     '''
                 }
             }
