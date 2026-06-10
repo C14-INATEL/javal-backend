@@ -86,6 +86,10 @@ public class FalhaMaquinaService {
     }
 
     private void colocarMaquinaEmManutencao(Maquina maquina) {
+        if (maquina.getStatus() != StatusMaquina.MANUTENCAO) {
+            maquina.setStatusAnteriorManutencao(maquina.getStatus());
+        }
+
         maquina.setStatus(StatusMaquina.MANUTENCAO);
         maquinaRepository.save(maquina);
     }
@@ -95,7 +99,12 @@ public class FalhaMaquinaService {
                 repository.existsByMaquinaIdAndStatus(maquina.getId(), StatusFalha.ABERTA);
 
         if (!aindaTemFalhaAberta) {
-            maquina.setStatus(StatusMaquina.ATIVA);
+            StatusMaquina statusRestaurado = maquina.getStatusAnteriorManutencao() != null
+                    ? maquina.getStatusAnteriorManutencao()
+                    : StatusMaquina.ATIVA;
+
+            maquina.setStatus(statusRestaurado);
+            maquina.setStatusAnteriorManutencao(null);
             maquinaRepository.save(maquina);
         }
     }
