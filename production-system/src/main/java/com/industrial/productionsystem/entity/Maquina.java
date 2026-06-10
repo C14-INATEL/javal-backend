@@ -25,6 +25,10 @@ public class Maquina {
     @Column(nullable = false)
     private StatusMaquina status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_anterior_manutencao")
+    private StatusMaquina statusAnteriorManutencao;
+
     @Column(nullable = false)
     private Integer capacidadePorHora;
 
