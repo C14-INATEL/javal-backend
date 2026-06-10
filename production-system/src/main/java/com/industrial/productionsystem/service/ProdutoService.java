@@ -4,6 +4,7 @@ import com.industrial.productionsystem.dto.ProdutoRequest;
 import com.industrial.productionsystem.dto.ProdutoResponse;
 import com.industrial.productionsystem.entity.Company;
 import com.industrial.productionsystem.entity.Produto;
+import com.industrial.productionsystem.exception.NotFoundException;
 import com.industrial.productionsystem.repository.CompanyRepository;
 import com.industrial.productionsystem.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class ProdutoService {
     public ProdutoResponse criar(ProdutoRequest request, Long companyId) {
 
         Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Empresa não encontrada"));
 
         Produto produto = new Produto();
         produto.setNome(request.getNome());
@@ -40,7 +41,7 @@ public class ProdutoService {
 
     public void deletar(Long id, Long companyId) {
         Produto produto = repository.findByIdAndCompanyId(id, companyId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Produto não encontrado"));
         repository.delete(produto);
     }
 }

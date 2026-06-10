@@ -8,6 +8,7 @@ import com.industrial.productionsystem.repository.MaquinaRepository;
 import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
 import com.industrial.productionsystem.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -26,40 +28,30 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(Long companyId) {
+        log.info("Montando dashboard para empresa={}", companyId);
 
-        // ── Máquinas ─────────────────────────────────────────────────
-        var maquinas = maquinaRepository.findByCompanyId(companyId);
-        long totalMaquinas      = maquinas.size();
-        long maquinasAtivas     = maquinas.stream().filter(m -> m.getStatus() == StatusMaquina.ATIVA).count();
-        long maquinasInativas   = maquinas.stream().filter(m -> m.getStatus() == StatusMaquina.INATIVA).count();
-        long maquinasManutencao = maquinas.stream().filter(m -> m.getStatus() == StatusMaquina.MANUTENCAO).count();
+        long totalMaquinas      = maquinaRepository.countByCompanyId(companyId);
+        long maquinasAtivas     = maquinaRepository.countByCompanyIdAndStatus(companyId, StatusMaquina.ATIVA);
+        long maquinasInativas   = maquinaRepository.countByCompanyIdAndStatus(companyId, StatusMaquina.INATIVA);
+        long maquinasManutencao = maquinaRepository.countByCompanyIdAndStatus(companyId, StatusMaquina.MANUTENCAO);
 
-        // ── Produtos ─────────────────────────────────────────────────
-        long totalProdutos = produtoRepository.findByCompanyId(companyId).size();
+        long totalProdutos = produtoRepository.countByCompanyId(companyId);
 
-        // ── Ordens ───────────────────────────────────────────────────
-        var ordens = ordemRepository.findByCompanyId(companyId);
+        long totalOrdens      = ordemRepository.countByCompanyId(companyId);
+        long ordensPendentes  = ordemRepository.countByCompanyIdAndStatus(companyId, StatusOrdem.PENDENTE);
+        long ordensEmProducao = ordemRepository.countByCompanyIdAndStatus(companyId, StatusOrdem.EM_PRODUCAO);
+        long ordensFinalizada = ordemRepository.countByCompanyIdAndStatus(companyId, StatusOrdem.FINALIZADA);
 
-        long totalOrdens       = ordens.size();
-        long ordensPendentes   = ordens.stream().filter(o -> o.getStatus() == StatusOrdem.PENDENTE).count();
-        long ordensEmProducao  = ordens.stream().filter(o -> o.getStatus() == StatusOrdem.EM_PRODUCAO).count();
-        long ordensFinalizada  = ordens.stream().filter(o -> o.getStatus() == StatusOrdem.FINALIZADA).count();
+        long totalUnidadesProduzidas = ordemRepository
+                .sumQuantidadeByCompanyIdAndStatus(companyId, StatusOrdem.FINALIZADA);
 
-        long totalUnidadesProduzidas = ordens.stream()
-                .filter(o -> o.getStatus() == StatusOrdem.FINALIZADA)
-                .mapToLong(OrdemDeProducao::getQuantidade)
-                .sum();
+        long totalUnidadesEmAberto = ordemRepository
+                .sumQuantidadeByCompanyIdAndStatusIn(companyId,
+                        List.of(StatusOrdem.PENDENTE, StatusOrdem.EM_PRODUCAO));
 
-        long totalUnidadesEmAberto = ordens.stream()
-                .filter(o -> o.getStatus() == StatusOrdem.PENDENTE
-                        || o.getStatus() == StatusOrdem.EM_PRODUCAO)
-                .mapToLong(OrdemDeProducao::getQuantidade)
-                .sum();
+        List<OrdemDeProducao> finalizadas = ordemRepository.findFinalizadasComMaquina(companyId);
 
-        // ── Ranking de máquinas ───────────────────────────────────────
-        // Agrupa ordens finalizadas por máquina e monta o top 5
-        Map<Long, List<OrdemDeProducao>> porMaquina = ordens.stream()
-                .filter(o -> o.getStatus() == StatusOrdem.FINALIZADA)
+        Map<Long, List<OrdemDeProducao>> porMaquina = finalizadas.stream()
                 .collect(Collectors.groupingBy(o -> o.getMaquina().getId()));
 
         List<DashboardResponse.MaquinaRankingItem> topMaquinas = porMaquina.entrySet().stream()

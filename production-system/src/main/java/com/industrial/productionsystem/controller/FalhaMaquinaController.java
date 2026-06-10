@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/falhas")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class FalhaMaquinaController {
 
     private final FalhaMaquinaService service;
