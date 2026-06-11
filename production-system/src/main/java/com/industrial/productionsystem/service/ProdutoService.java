@@ -53,6 +53,7 @@ public class ProdutoService {
             throw new IllegalArgumentException(
                     "Não é possível excluir produto com ordens vinculadas");
         }
+
         repository.delete(produto);
     }
 }
