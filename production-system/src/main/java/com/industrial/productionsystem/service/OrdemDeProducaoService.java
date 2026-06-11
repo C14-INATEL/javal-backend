@@ -90,4 +90,21 @@ public class OrdemDeProducaoService {
 
         return OrdemResponse.from(repository.save(ordem));
     }
+
+    @Transactional
+    public OrdemResponse cancelar(Long id, Long companyId) {
+
+        OrdemDeProducao ordem = repository.findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new NotFoundException("Ordem não encontrada"));
+
+        if (ordem.getStatus() != StatusOrdem.PENDENTE) {
+            throw new IllegalArgumentException(
+                    "Apenas ordens PENDENTES podem ser canceladas");
+        }
+
+        ordem.setStatus(StatusOrdem.CANCELADA);
+        ordem.setDataFim(LocalDateTime.now());
+
+        return OrdemResponse.from(repository.save(ordem));
+    }
 }

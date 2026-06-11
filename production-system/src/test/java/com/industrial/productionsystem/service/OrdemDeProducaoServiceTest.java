@@ -209,4 +209,57 @@ class OrdemDeProducaoServiceTest {
         assertEquals("Ordem não encontrada", exception.getMessage());
         verify(repository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("Deve cancelar ordem PENDENTE")
+    void deveCancelarOrdemPendente() {
+        OrdemDeProducao ordem = ordemSalva(StatusOrdem.PENDENTE);
+
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID)).thenReturn(Optional.of(ordem));
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        OrdemResponse response = service.cancelar(1L, COMPANY_ID);
+
+        assertEquals(StatusOrdem.CANCELADA, response.getStatus());
+        assertNotNull(response.getDataFim());
+    }
+
+    @Test
+    @DisplayName("Não deve cancelar ordem EM_PRODUCAO")
+    void naoDeveCancelarOrdemEmProducao() {
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(ordemSalva(StatusOrdem.EM_PRODUCAO)));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.cancelar(1L, COMPANY_ID)
+        );
+
+        assertEquals("Apenas ordens PENDENTES podem ser canceladas", exception.getMessage());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Não deve cancelar ordem FINALIZADA")
+    void naoDeveCancelarOrdemFinalizada() {
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(ordemSalva(StatusOrdem.FINALIZADA)));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.cancelar(1L, COMPANY_ID));
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Não deve cancelar ordem já CANCELADA")
+    void naoDeveCancelarOrdemJaCancelada() {
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(ordemSalva(StatusOrdem.CANCELADA)));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.cancelar(1L, COMPANY_ID));
+
+        verify(repository, never()).save(any());
+    }
 }
