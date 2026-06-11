@@ -6,6 +6,7 @@ import com.industrial.productionsystem.entity.Company;
 import com.industrial.productionsystem.entity.Produto;
 import com.industrial.productionsystem.repository.CompanyRepository;
 import com.industrial.productionsystem.repository.ProdutoRepository;
+import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ class ProdutoServiceTest {
 
     @Mock private ProdutoRepository repository;
     @Mock private CompanyRepository companyRepository;
+    @Mock private OrdemDeProducaoRepository ordemDeProducaoRepository;
     @InjectMocks private ProdutoService service;
 
     private Company company;
@@ -109,11 +112,43 @@ class ProdutoServiceTest {
     @Test
     @DisplayName("Deve deletar produto com sucesso")
     void deveDeletarProduto() {
-        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
-                .thenReturn(Optional.of(produtoSalvo("P1")));
 
-        assertDoesNotThrow(() -> service.deletar(1L, COMPANY_ID));
-        verify(repository, times(1)).delete(any());
+        Produto produto = produtoSalvo("P1");
+
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(produto));
+
+        when(ordemDeProducaoRepository.existsByProdutoIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(false);
+
+        service.deletar(1L, COMPANY_ID);
+
+        verify(repository, times(1)).delete(produto);
+    }
+
+    @Test
+    @DisplayName("Não deve deletar produto com ordens vinculadas")
+    void naoDeveDeletarProdutoComOrdensVinculadas() {
+
+        Produto produto = produtoSalvo("P1");
+
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(produto));
+
+        when(ordemDeProducaoRepository.existsByProdutoIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.deletar(1L, COMPANY_ID)
+        );
+
+        assertEquals(
+                "Não é possível excluir produto com ordens vinculadas",
+                exception.getMessage()
+        );
+
+        verify(repository, never()).delete(any());
     }
 
     @Test

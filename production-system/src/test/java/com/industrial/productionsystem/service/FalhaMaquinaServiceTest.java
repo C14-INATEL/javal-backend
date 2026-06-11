@@ -115,12 +115,35 @@ class FalhaMaquinaServiceTest {
         verify(repository, never()).save(any());
     }
 
+    @Test
+    @DisplayName("Registrar falha deve guardar status anterior da máquina")
+    void registrarFalhaDeveGuardarStatusAnteriorDaMaquina() {
+        maquina.setStatus(StatusMaquina.INATIVA);
+
+        when(companyRepository.findById(COMPANY_ID)).thenReturn(Optional.of(company));
+        when(maquinaRepository.findByIdAndCompanyId(MAQUINA_ID, COMPANY_ID))
+                .thenReturn(Optional.of(maquina));
+        when(repository.save(any())).thenReturn(falhaComStatus(StatusFalha.ABERTA));
+
+        service.registrar(requestValido(), COMPANY_ID);
+
+        ArgumentCaptor<Maquina> captor = ArgumentCaptor.forClass(Maquina.class);
+        verify(maquinaRepository, times(1)).save(captor.capture());
+
+        Maquina maquinaSalva = captor.getValue();
+
+        assertEquals(StatusMaquina.MANUTENCAO, maquinaSalva.getStatus());
+        assertEquals(StatusMaquina.INATIVA, maquinaSalva.getStatusAnteriorManutencao());
+    }
+
+
     // ── resolver ─────────────────────────────────────────────────────
 
     @Test
     @DisplayName("Resolver última falha aberta deve voltar a máquina para ATIVA")
     void resolverUltimaFalhaVoltaMaquinaParaAtiva() {
         maquina.setStatus(StatusMaquina.MANUTENCAO);
+        maquina.setStatusAnteriorManutencao(StatusMaquina.ATIVA);
         FalhaMaquina falha = falhaComStatus(StatusFalha.ABERTA);
 
         when(repository.findByIdAndCompanyId(100L, COMPANY_ID)).thenReturn(Optional.of(falha));
@@ -161,6 +184,33 @@ class FalhaMaquinaServiceTest {
 
         assertThrows(NotFoundException.class, () -> service.resolver(999L, COMPANY_ID));
     }
+
+    @Test
+    @DisplayName("Resolver última falha deve restaurar status anterior INATIVA")
+    void resolverUltimaFalhaDeveRestaurarStatusAnteriorInativa() {
+        maquina.setStatus(StatusMaquina.MANUTENCAO);
+        maquina.setStatusAnteriorManutencao(StatusMaquina.INATIVA);
+
+        FalhaMaquina falha = falhaComStatus(StatusFalha.ABERTA);
+
+        when(repository.findByIdAndCompanyId(100L, COMPANY_ID)).thenReturn(Optional.of(falha));
+        when(repository.save(any())).thenReturn(falha);
+        when(repository.existsByMaquinaIdAndStatus(MAQUINA_ID, StatusFalha.ABERTA))
+                .thenReturn(false);
+
+        FalhaMaquinaResponse response = service.resolver(100L, COMPANY_ID);
+
+        assertEquals(StatusFalha.RESOLVIDA, response.getStatus());
+
+        ArgumentCaptor<Maquina> captor = ArgumentCaptor.forClass(Maquina.class);
+        verify(maquinaRepository, times(1)).save(captor.capture());
+
+        Maquina maquinaSalva = captor.getValue();
+
+        assertEquals(StatusMaquina.INATIVA, maquinaSalva.getStatus());
+        assertNull(maquinaSalva.getStatusAnteriorManutencao());
+    }
+
 
     // ── listar ───────────────────────────────────────────────────────
 

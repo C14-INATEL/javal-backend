@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.industrial.productionsystem.repository.FalhaMaquinaRepository;
+import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,8 @@ class MaquinaServiceTest {
 
     @Mock private MaquinaRepository repository;
     @Mock private CompanyRepository companyRepository;
+    @Mock private FalhaMaquinaRepository falhaMaquinaRepository;
+    @Mock private OrdemDeProducaoRepository ordemDeProducaoRepository;
     @InjectMocks private MaquinaService service;
 
     private Company company;
@@ -140,5 +144,73 @@ class MaquinaServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> service.alterarStatus(1L, null, COMPANY_ID));
         verify(repository, never()).save(any());
+    }
+
+
+// ── deletar ───────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Não deve deletar máquina com falhas vinculadas")
+    void naoDeveDeletarMaquinaComFalhasVinculadas() {
+        Maquina maquina = maquinaSalva("Torno CNC 01", StatusMaquina.ATIVA);
+
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(maquina));
+        when(falhaMaquinaRepository.existsByMaquinaIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.deletar(1L, COMPANY_ID)
+        );
+
+        assertEquals(
+                "Não é possível excluir máquina com falhas ou ordens vinculadas",
+                exception.getMessage()
+        );
+
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("Não deve deletar máquina com ordens vinculadas")
+    void naoDeveDeletarMaquinaComOrdensVinculadas() {
+        Maquina maquina = maquinaSalva("Torno CNC 01", StatusMaquina.ATIVA);
+
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(maquina));
+        when(falhaMaquinaRepository.existsByMaquinaIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(false);
+        when(ordemDeProducaoRepository.existsByMaquinaIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.deletar(1L, COMPANY_ID)
+        );
+
+        assertEquals(
+                "Não é possível excluir máquina com falhas ou ordens vinculadas",
+                exception.getMessage()
+        );
+
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("Deve deletar máquina sem falhas ou ordens vinculadas")
+    void deveDeletarMaquinaSemVinculos() {
+        Maquina maquina = maquinaSalva("Torno CNC 01", StatusMaquina.ATIVA);
+
+        when(repository.findByIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(Optional.of(maquina));
+        when(falhaMaquinaRepository.existsByMaquinaIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(false);
+        when(ordemDeProducaoRepository.existsByMaquinaIdAndCompanyId(1L, COMPANY_ID))
+                .thenReturn(false);
+
+        service.deletar(1L, COMPANY_ID);
+
+        verify(repository, times(1)).delete(maquina);
     }
 }

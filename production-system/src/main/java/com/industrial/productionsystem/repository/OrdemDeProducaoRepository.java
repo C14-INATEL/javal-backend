@@ -10,13 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrdemDeProducaoRepository extends JpaRepository<OrdemDeProducao, Long> {
-
     List<OrdemDeProducao> findByCompanyId(Long companyId);
-
     Optional<OrdemDeProducao> findByIdAndCompanyId(Long id, Long companyId);
-
     List<OrdemDeProducao> findByMaquinaIdAndCompanyId(Long maquinaId, Long companyId);
-
+    boolean existsByMaquinaIdAndCompanyId(Long maquinaId, Long companyId);
+    boolean existsByProdutoIdAndCompanyId(Long produtoId, Long companyId);
     long countByCompanyId(Long companyId);
 
     long countByCompanyIdAndStatus(Long companyId, StatusOrdem status);

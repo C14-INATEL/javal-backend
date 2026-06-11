@@ -50,4 +50,13 @@ public class OrdemDeProducaoController {
 
         return ResponseEntity.ok(service.finalizar(id, principal.getId()));
     }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<OrdemResponse> cancelar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CompanyPrincipal principal) {
+
+        return ResponseEntity.ok(service.cancelar(id, principal.getId()));
+    }
+
 }
