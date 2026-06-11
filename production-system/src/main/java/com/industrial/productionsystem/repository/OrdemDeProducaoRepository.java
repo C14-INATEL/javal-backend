@@ -10,4 +10,5 @@ public interface OrdemDeProducaoRepository extends JpaRepository<OrdemDeProducao
     List<OrdemDeProducao> findByCompanyId(Long companyId);
     Optional<OrdemDeProducao> findByIdAndCompanyId(Long id, Long companyId);
     List<OrdemDeProducao> findByMaquinaIdAndCompanyId(Long maquinaId, Long companyId);
+    boolean existsByMaquinaIdAndCompanyId(Long maquinaId, Long companyId);
 }

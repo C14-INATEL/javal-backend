@@ -10,6 +10,8 @@ import com.industrial.productionsystem.repository.CompanyRepository;
 import com.industrial.productionsystem.repository.MaquinaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.industrial.productionsystem.repository.FalhaMaquinaRepository;
+import com.industrial.productionsystem.repository.OrdemDeProducaoRepository;
 
 import java.util.List;
 
@@ -19,6 +21,8 @@ public class MaquinaService {
 
     private final MaquinaRepository repository;
     private final CompanyRepository companyRepository;
+    private final FalhaMaquinaRepository falhaMaquinaRepository;
+    private final OrdemDeProducaoRepository ordemDeProducaoRepository;
 
     public MaquinaResponse criar(MaquinaRequest request, Long companyId) {
 
@@ -62,6 +66,18 @@ public class MaquinaService {
     public void deletar(Long id, Long companyId) {
         Maquina maquina = repository.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new NotFoundException("Máquina não encontrada"));
+
+        boolean possuiFalhas =
+                falhaMaquinaRepository.existsByMaquinaIdAndCompanyId(id, companyId);
+
+        boolean possuiOrdens =
+                ordemDeProducaoRepository.existsByMaquinaIdAndCompanyId(id, companyId);
+
+        if (possuiFalhas || possuiOrdens) {
+            throw new IllegalArgumentException(
+                    "Não é possível excluir máquina com falhas ou ordens vinculadas");
+        }
+
         repository.delete(maquina);
     }
 

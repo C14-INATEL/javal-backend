@@ -16,4 +16,7 @@ public interface FalhaMaquinaRepository extends JpaRepository<FalhaMaquina, Long
     Optional<FalhaMaquina> findByIdAndCompanyId(Long id, Long companyId);
 
     boolean existsByMaquinaIdAndStatus(Long maquinaId, StatusFalha status);
+
+    boolean existsByMaquinaIdAndCompanyId(Long maquinaId, Long companyId);
+
 }
