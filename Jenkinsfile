@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         JAVA_HOME = tool 'JDK21'
-        PATH      = "${JAVA_HOME}/bin:${env.PATH}"
+        PATH      = "/usr/bin:/usr/local/bin:${JAVA_HOME}/bin:${env.PATH}"
         MVN       = './production-system/mvnw'
         WORKDIR   = 'production-system'
     }
