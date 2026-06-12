@@ -691,7 +691,7 @@ O uso de IA pelo grupo foi documentado de forma transparente abaixo, contendo pa
 
 ### Modelos utilizados pelo grupo
 
-- **Claude (Anthropic)** — usado por Ana Júlia e Pettrius
+- **Claude (Anthropic)** — usado por Ana Júlia, João Vítor e Pettrius
 - **ChatGPT Plus (OpenAI)** — usado por Vinícius
 - **GitHub Copilot** — usado por Vinícius
 
