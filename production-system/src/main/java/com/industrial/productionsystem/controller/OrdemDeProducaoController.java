@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ordens")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class OrdemDeProducaoController {
 
     private final OrdemDeProducaoService service;

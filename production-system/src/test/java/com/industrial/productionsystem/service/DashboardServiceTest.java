@@ -48,28 +48,41 @@ class DashboardServiceTest {
         produto.setCompany(company);
     }
 
-    private OrdemDeProducao criarOrdem(StatusOrdem status, int quantidade) {
+    private OrdemDeProducao criarOrdem(Maquina maquina, StatusOrdem status, int quantidade) {
         OrdemDeProducao o = new OrdemDeProducao();
         o.setProduto(produto);
-        o.setMaquina(maquinaAtiva);
+        o.setMaquina(maquina);
         o.setQuantidade(quantidade);
         o.setStatus(status);
         o.setCompany(company);
         return o;
     }
 
+    private void mockMaquinas(long total, long ativas, long inativas, long manutencao) {
+        when(maquinaRepository.countByCompanyId(COMPANY_ID)).thenReturn(total);
+        when(maquinaRepository.countByCompanyIdAndStatus(COMPANY_ID, StatusMaquina.ATIVA)).thenReturn(ativas);
+        when(maquinaRepository.countByCompanyIdAndStatus(COMPANY_ID, StatusMaquina.INATIVA)).thenReturn(inativas);
+        when(maquinaRepository.countByCompanyIdAndStatus(COMPANY_ID, StatusMaquina.MANUTENCAO)).thenReturn(manutencao);
+    }
+
+    private void mockOrdens(long total, long pendentes, long emProducao, long finalizadas,
+                            long unidadesProduzidas, long unidadesEmAberto,
+                            List<OrdemDeProducao> finalizadasComMaquina) {
+        when(ordemRepository.countByCompanyId(COMPANY_ID)).thenReturn(total);
+        when(ordemRepository.countByCompanyIdAndStatus(COMPANY_ID, StatusOrdem.PENDENTE)).thenReturn(pendentes);
+        when(ordemRepository.countByCompanyIdAndStatus(COMPANY_ID, StatusOrdem.EM_PRODUCAO)).thenReturn(emProducao);
+        when(ordemRepository.countByCompanyIdAndStatus(COMPANY_ID, StatusOrdem.FINALIZADA)).thenReturn(finalizadas);
+        when(ordemRepository.sumQuantidadeByCompanyIdAndStatus(COMPANY_ID, StatusOrdem.FINALIZADA)).thenReturn(unidadesProduzidas);
+        when(ordemRepository.sumQuantidadeByCompanyIdAndStatusIn(eq(COMPANY_ID), anyList())).thenReturn(unidadesEmAberto);
+        when(ordemRepository.findFinalizadasComMaquina(COMPANY_ID)).thenReturn(finalizadasComMaquina);
+    }
+
     @Test
     @DisplayName("Deve contar corretamente máquinas por status")
     void deveContarMaquinasPorStatus() {
-        Maquina inativa = new Maquina("Fresadora", "Fresagem", 80, company);
-        inativa.setStatus(StatusMaquina.INATIVA);
-        Maquina manutencao = new Maquina("Torno X", "Torno", 60, company);
-        manutencao.setStatus(StatusMaquina.MANUTENCAO);
-
-        when(maquinaRepository.findByCompanyId(COMPANY_ID))
-                .thenReturn(List.of(maquinaAtiva, inativa, manutencao));
-        when(produtoRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
-        when(ordemRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
+        mockMaquinas(3, 1, 1, 1);
+        when(produtoRepository.countByCompanyId(COMPANY_ID)).thenReturn(0L);
+        mockOrdens(0, 0, 0, 0, 0, 0, List.of());
 
         DashboardResponse response = service.getDashboard(COMPANY_ID);
 
@@ -82,14 +95,9 @@ class DashboardServiceTest {
     @Test
     @DisplayName("Deve contar ordens por status e somar unidades produzidas")
     void deveContarOrdensPorStatusESomarUnidades() {
-        when(maquinaRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
-        when(produtoRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
-        when(ordemRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of(
-                criarOrdem(StatusOrdem.PENDENTE, 50),
-                criarOrdem(StatusOrdem.EM_PRODUCAO, 100),
-                criarOrdem(StatusOrdem.FINALIZADA, 200),
-                criarOrdem(StatusOrdem.FINALIZADA, 300)
-        ));
+        mockMaquinas(0, 0, 0, 0);
+        when(produtoRepository.countByCompanyId(COMPANY_ID)).thenReturn(0L);
+        mockOrdens(4, 1, 1, 2, 500L, 150L, List.of());
 
         DashboardResponse response = service.getDashboard(COMPANY_ID);
 
@@ -97,8 +105,8 @@ class DashboardServiceTest {
         assertEquals(1, response.getOrdensPendentes());
         assertEquals(1, response.getOrdensEmProducao());
         assertEquals(2, response.getOrdensFinalizada());
-        assertEquals(500, response.getTotalUnidadesProduzidas());    // 200 + 300
-        assertEquals(150, response.getTotalUnidadesEmAberto());      // 50 + 100
+        assertEquals(500, response.getTotalUnidadesProduzidas()); // 200 + 300
+        assertEquals(150, response.getTotalUnidadesEmAberto());   // 50 + 100
     }
 
     @Test
@@ -108,19 +116,13 @@ class DashboardServiceTest {
         maquina2.setId(2L);
         maquina2.setStatus(StatusMaquina.ATIVA);
 
-        OrdemDeProducao o1 = criarOrdem(StatusOrdem.FINALIZADA, 100);
-        OrdemDeProducao o2 = criarOrdem(StatusOrdem.FINALIZADA, 200);
-        // Duas ordens na maquinaAtiva, uma na maquina2
-        OrdemDeProducao o3 = new OrdemDeProducao();
-        o3.setMaquina(maquina2);
-        o3.setProduto(produto);
-        o3.setQuantidade(50);
-        o3.setStatus(StatusOrdem.FINALIZADA);
-        o3.setCompany(company);
+        OrdemDeProducao o1 = criarOrdem(maquinaAtiva, StatusOrdem.FINALIZADA, 100);
+        OrdemDeProducao o2 = criarOrdem(maquinaAtiva, StatusOrdem.FINALIZADA, 200);
+        OrdemDeProducao o3 = criarOrdem(maquina2, StatusOrdem.FINALIZADA, 50);
 
-        when(maquinaRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of(maquinaAtiva, maquina2));
-        when(produtoRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of(produto));
-        when(ordemRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of(o1, o2, o3));
+        mockMaquinas(2, 2, 0, 0);
+        when(produtoRepository.countByCompanyId(COMPANY_ID)).thenReturn(1L);
+        mockOrdens(3, 0, 0, 3, 350L, 0L, List.of(o1, o2, o3));
 
         DashboardResponse response = service.getDashboard(COMPANY_ID);
 
@@ -134,9 +136,9 @@ class DashboardServiceTest {
     @Test
     @DisplayName("Deve retornar dashboard zerado quando empresa não tem dados")
     void deveRetornarDashboardZerado() {
-        when(maquinaRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
-        when(produtoRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
-        when(ordemRepository.findByCompanyId(COMPANY_ID)).thenReturn(List.of());
+        mockMaquinas(0, 0, 0, 0);
+        when(produtoRepository.countByCompanyId(COMPANY_ID)).thenReturn(0L);
+        mockOrdens(0, 0, 0, 0, 0L, 0L, List.of());
 
         DashboardResponse response = service.getDashboard(COMPANY_ID);
 

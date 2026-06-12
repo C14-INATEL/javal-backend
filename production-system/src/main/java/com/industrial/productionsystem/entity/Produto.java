@@ -19,8 +19,16 @@ public class Produto {
 
     @Column(nullable = false)
     private Integer tempoProducaoUnitario;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
+
+    public Produto() {}
+
+    public Produto(String nome, Integer tempoProducaoUnitario, Company company) {
+        this.nome = nome;
+        this.tempoProducaoUnitario = tempoProducaoUnitario;
+        this.company = company;
+    }
 }
