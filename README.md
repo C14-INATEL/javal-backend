@@ -1,4 +1,4 @@
-# JAVAL — Sistema de Gestão de Máquinas Industriais
+# JAVAL — Sistema de Gestão de Produção Industrial
 
 API REST para gestão de produção industrial multiempresa: cada empresa cadastra suas máquinas, produtos, ordens de produção e registra as falhas de suas máquinas, acompanhando tudo por um dashboard de métricas. O acesso é isolado por empresa e protegido por autenticação JWT — cada empresa só enxerga e manipula os próprios dados.
 
@@ -635,49 +635,49 @@ O maior bloqueio foi sincronizar o trabalho de cinco pessoas com disponibilidade
 
 Ao longo do projeto, vários refactorings foram aplicados com evidência direta no histórico de commits e Pull Requests.
 
-### 1. Centralização do tratamento global de erros
+### 1. Centralização do tratamento global de erros (PR #36)
 
 Após análise da arquitetura, foi identificada a ausência de um tratamento global de exceções. Foi criada uma classe `GlobalExceptionHandler` com `@ControllerAdvice`, centralizando o mapeamento de exceções de domínio (como `NotFoundException`) para respostas HTTP apropriadas.
 
 **Motivação:** evitar `try/catch` repetidos em cada controller e padronizar o formato de erro retornado pela API.
 
-### 2. Reconstrução do `DashboardResponse` ausente
+### 2. Reconstrução do `DashboardResponse` ausente (PR #38)
 
 O PR do dashboard foi mergeado sem o DTO `DashboardResponse`, quebrando a compilação da `main`. O arquivo foi reconstruído a partir do uso no `DashboardService`, identificando todos os campos necessários e a classe aninhada `MaquinaRankingItem`.
 
 **Motivação:** restaurar a compilação do projeto e garantir que o pipeline conseguisse passar.
 
-### 3. Padronização de `@WebMvcTest` excluindo `JwtAuthFilter`
+### 3. Padronização de `@WebMvcTest` excluindo `JwtAuthFilter` (PR #37)
 
 Vários testes de controller estavam falhando porque tentavam carregar o `JwtAuthFilter` no contexto reduzido do `@WebMvcTest`. A correção foi aplicada padronizando todos os testes com `excludeFilters = @ComponentScan.Filter(type = ASSIGNABLE_TYPE, classes = JwtAuthFilter.class)`.
 
 **Motivação:** isolar o teste da camada de segurança, que tem suas próprias classes de teste dedicadas (`JwtAuthFilterTest`, `JwtUtilTest`).
 
-### 4. Adição de `@Transactional` em serviços com relações lazy
+### 4. Adição de `@Transactional` em serviços com relações lazy (PR #45)
 
 O `FalhaMaquinaService` retornava DTOs montados a partir de entidades com `@ManyToOne FetchType.LAZY`, causando `LazyInitializationException` em runtime. Foi anotado com `@Transactional`, mantendo a sessão Hibernate aberta durante a montagem do response.
 
 **Motivação:** corrigir bug reportado pela desenvolvedora frontend e garantir que o padrão fosse seguido em futuros services com relações lazy.
 
-### 5. Validação de integridade na exclusão de máquinas e produtos
+### 5. Validação de integridade na exclusão de máquinas e produtos (PRs #56 e #57)
 
 As exclusões simples de máquinas e produtos foram refatoradas para validar vínculos antes de deletar: máquina não pode ser excluída se tem falhas ou ordens vinculadas; produto não pode ser excluído se tem ordens vinculadas.
 
 **Motivação:** evitar erros de integridade referencial no banco e preservar o histórico operacional do sistema.
 
-### 6. Regra de cancelamento de ordens de produção
+### 6. Regra de cancelamento de ordens de produção (PR #55)
 
 Foi adicionada uma transição de estado nova (`CANCELADA`) com validação rigorosa: apenas ordens em `PENDENTE` podem ser canceladas. Ordens em `EM_PRODUCAO`, `FINALIZADA` ou já `CANCELADA` retornam erro.
 
 **Motivação:** dar ao gestor a possibilidade de descartar ordens criadas por engano sem comprometer o histórico das ordens efetivamente executadas.
 
-### 7. Configuração de `application.properties.example`
+### 7. Configuração de `application.properties.example` (PR #38)
 
 O `application.properties` original era versionado contendo o `jwt.secret` exposto. Foi movido para o `.gitignore` e substituído por um template `application.properties.example` com placeholder no lugar do segredo.
 
 **Motivação:** remover segredo do repositório público e estabelecer um padrão claro de configuração local para novos contribuidores.
 
-### 8. Remoção de duplicações e anotações Lombok redundantes
+### 8. Remoção de duplicações e anotações Lombok redundantes (PR #45)
 
 Após análise de qualidade do código (apoiada por IA), foram identificadas duplicações em construtores, anotações Lombok redundantes (como `@Getter`/`@Setter` em classes já anotadas com `@Data`) e métodos não utilizados. Os ajustes foram aplicados gradualmente, com validação manual para evitar alterações em componentes já estabilizados.
 
@@ -743,7 +743,7 @@ A IA foi utilizada **individualmente** por cada integrante, sem pair programming
 
 ### João Vítor
 
-**Modelo utilizado:** a definir (não informado pelo integrante).
+**Modelo utilizado:** Claude (Anthropic)
 
 **Finalidades:**
 
